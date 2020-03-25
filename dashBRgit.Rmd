@@ -52,10 +52,10 @@ Row {data-width = 400}
 #------------------ Parameters ------------------
 # Set colors
 # https://www.w3.org/TR/css-color-3/#svg-color
-confirmed_color <- rgb(0,150,0, maxColorValue = 255)
+confirmed_color <- rgb(150, 150, 0, maxColorValue = 255)
 active_color <- confirmed_color
 recovered_color <- "forestgreen"
-death_color <- rgb(255,40,40, maxColorValue = 255)
+death_color <- rgb(220, 40, 40, maxColorValue = 255)
 #------------------ Data ------------------
 df <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
@@ -100,7 +100,7 @@ df1 <- coronavirus %>% dplyr::filter(date == max(date))
 ```{r}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = "."), "", sep = " "),
-  caption = "Confirmados",
+  caption = "Confirmados no Brasil",
   icon = "fas fa-diagnoses",
   color = confirmed_color
 )
@@ -115,7 +115,7 @@ valueBox(
                 round(100 * sum(df$death, na.rm = TRUE) / 
                         sum(df$confirmed), 1), "%)",
                 sep = ""),
-  caption = "Mortes",
+  caption = "Mortes no Brasil",
   icon = "fas fa-heart",
   color = death_color
 )
@@ -270,7 +270,7 @@ df1 <- coronavirus %>% dplyr::filter(date == max(date))
 ```{r}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = "."), "", sep = " "),
-  caption = "Confirmados",
+  caption = "Confirmados no mundo",
   icon = "fas fa-diagnoses",
   color = confirmed_color
 )
@@ -285,7 +285,7 @@ valueBox(
                 round(100 * sum(df$death, na.rm = TRUE) / 
                         sum(df$confirmed), 1), "%)",
                 sep = ""),
-  caption = "Mortes",
+  caption = "Mortes no mundo",
   icon = "fas fa-heart",
   color = death_color
 )
@@ -426,3 +426,14 @@ Mais informações, podem ser vistas neste  [artigo](https://www.statsandr.com/b
 Buscamos atualizar este dashboard diariamente.
 
 Última atualização:  `r format(Sys.time(), "%A,  %B %d, %Y")`.
+
+
+
+
+
+
+
+
+
+
+<!-- https://resources.github.com/whitepapers/github-and-rstudio/ -->
