@@ -291,7 +291,7 @@ valueBox(
 
 
 
-### **Evolução do coronavírus no BRASIL desde 22/01/2020**
+### **Evolução do coronavírus no BRASIL desde 22/01/2020 até**
     
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
