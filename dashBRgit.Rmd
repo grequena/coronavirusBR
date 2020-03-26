@@ -223,7 +223,7 @@ plotly::plot_ly(data = df_dailyBR1) %>%
     arrowhead = 5,
     arrowsize = 1,
     showarrow = TRUE,
-    ax = 90,
+    ax = 0,
     ay = -90
   ) %>%
   plotly::add_annotations(
@@ -236,13 +236,13 @@ plotly::plot_ly(data = df_dailyBR1) %>%
     arrowhead = 3,
     arrowsize = 1,
     showarrow = TRUE,
-    ax = -90,
+    ax = 0,
     ay = -90
   ) %>%
   plotly::layout(
     title = "",
     yaxis = list(title = "Número de casos acumulado"),
-    xaxis = list(title = "Data"),
+    xaxis = list(title = ""),
     legend = list(x = 0.1, y = 0.9),
     hovermode = "compare"
   )
