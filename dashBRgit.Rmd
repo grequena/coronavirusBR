@@ -147,7 +147,6 @@ df1 <- coronavirus %>%
 Resumo
 =======================================================================
 
-
 Column {data-width=500}
 -------------------------------------
 
@@ -162,8 +161,9 @@ Column {data-width=500}
 ```{r}
 valueBox(
   value = paste(format(sum(dfBR$confirmed), big.mark = "."), "", sep = " "),
-  caption = paste0("Confirmados no <B>BRASIL</B> até ", 
-  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
+  caption = paste("Confirmados no <B>BRASIL</B> • ",
+                  as.character.POSIXt(max(coronavirus$date), 
+                                      format = "%d/%m/%Y")), 
   icon = "fas fa-diagnoses",
   color = confirmed_colorBR
 )
@@ -174,11 +174,10 @@ valueBox(
 ```{r}
 valueBox(
   value = paste(format(sum(dfBR$death, na.rm = TRUE), big.mark = "."), " (", 
-                round(100 * sum(dfBR$death, na.rm = TRUE) / 
-                        sum(dfBR$confirmed), 1), "%)",
-                sep = ""),
-  caption = paste0("Confirmados no <B>BRASIL</B> até ", 
-  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
+                format(round(100 * sum(dfBR$death, na.rm = TRUE) / 
+                        sum(dfBR$confirmed), 1), decimal.mark = ","), 
+                "%)", sep = ""),
+  caption = "Mortes no <B>BRASIL</B>",
   icon = "fas fa-heart",
   color = death_colorBR
 )
@@ -190,7 +189,7 @@ valueBox(
 <!-- ----------------------------------------------------- -->
 
 
-### **Evolução do coronavírus no BRASIL desde 25/02/2020 até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
+### **Evolução do coronavírus no BRASIL desde 25/02/2020**
     
 ```{r}
 df_dailyBR1 <- df_dailyBR %>% 
@@ -259,42 +258,40 @@ Column {data-width=500}
 <!-- ---------- Box Confirmed x Deaths WORLD ---------- -->
 <!-- -------------------------------------------------- -->
 
-### confirmed {.value-box} asdf
+### confirmed {.value-box}
 
 ```{r}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = "."), "", sep = " "),
-  caption = paste0("Confirmados no <B>MUNDO</B> até ", 
-  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
+  caption = paste("Confirmados no <B>MUNDO</B> • ",
+                  as.character.POSIXt(max(coronavirus$date), 
+                                      format = "%d/%m/%Y")), 
   icon = "fas fa-diagnoses",
   color = confirmed_color
 )
 ```
-
 
 ### death {.value-box}
 
 ```{r}
 valueBox(
   value = paste(format(sum(df$death, na.rm = TRUE), big.mark = "."), " (", 
-                round(100 * sum(df$death, na.rm = TRUE) / 
-                        sum(df$confirmed), 1), "%)",
-                sep = ""),
-  caption = paste0("Mortes no <B>MUNDO</B> até ", 
-  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
+                format(round(100 * sum(df$death, na.rm = TRUE) / 
+                        sum(df$confirmed), 1), decimal.mark = ","), 
+                "%)", sep = ""),
+  caption = "Mortes no <B>MUNDO</B>",
   icon = "fas fa-heart",
   color = death_color
 )
 ```
+
 
 <!-- ---------------------------------------------------- -->
 <!-- ---------- Chart Confirmed x Deaths WORLD ---------- -->
 <!-- ---------------------------------------------------- -->
 
 
-
-
-### **Evolução do coronavírus no BRASIL desde 22/01/2020 até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
+### **Evolução do coronavírus no BRASIL desde 22/01/2020**
     
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
@@ -324,7 +321,6 @@ plotly::plot_ly(data = df_daily) %>%
     hovermode = "compare"
   )
 ```
-
 
 
 
@@ -393,6 +389,7 @@ map_object %>%
 
 
 
+
 Sobre
 =======================================================================
 
@@ -406,25 +403,22 @@ Sua primeira versão é uma adaptação deste [dashboard](https://ramikrispin.gi
 
 **Código**
 
-O código por trás desse dashboard pode ser acessado no canto superior direito no botão `</>Source Code`.
+O código por trás desse dashboard pode ser acessado no canto superior direito no botão `</> Source Code`.
 
 **Dados**
 
 O banco de dados utilizado neste dashboard está disponível no pacote do R  [`coronavirus`](https://github.com/RamiKrispin/coronavirus){target="_blank"}.
 
-Os dados originais é atualizado através da Johns Hopkins University Center:  [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
+Os dados originais são atualizados através da Johns Hopkins University   [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
 
 **Contato**
 
 Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mail requena@ufv.br.
 
-Mais informações, podem ser vistas neste  [artigo](https://www.statsandr.com/blog/how-to-create-a-simple-coronavirus-dashboard-specific-to-your-country-in-r/).
 
 **Atualização**
 
-Buscamos atualizar este dashboard diariamente.
-
-Última atualização:  `r format(Sys.time(), "%A,  %B %d, %Y")`.
+Última atualização:  `r format(Sys.time(), "%d/%m/%Y")`.
 
 
 
