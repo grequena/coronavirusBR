@@ -162,7 +162,8 @@ Column {data-width=500}
 ```{r}
 valueBox(
   value = paste(format(sum(dfBR$confirmed), big.mark = "."), "", sep = " "),
-  caption = "Confirmados no <B>BRASIL</B>",
+  caption = paste0("Confirmados no <B>BRASIL</B> até ", 
+  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
   icon = "fas fa-diagnoses",
   color = confirmed_colorBR
 )
@@ -176,7 +177,8 @@ valueBox(
                 round(100 * sum(dfBR$death, na.rm = TRUE) / 
                         sum(dfBR$confirmed), 1), "%)",
                 sep = ""),
-  caption = "Mortes no <B>BRASIL</B>",
+  caption = paste0("Confirmados no <B>BRASIL</B> até ", 
+  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
   icon = "fas fa-heart",
   color = death_colorBR
 )
@@ -188,7 +190,7 @@ valueBox(
 <!-- ----------------------------------------------------- -->
 
 
-### **Evolução do coronavírus no BRASIL desde 25/02/2020**
+### **Evolução do coronavírus no BRASIL desde 25/02/2020 até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
     
 ```{r}
 df_dailyBR1 <- df_dailyBR %>% 
@@ -257,13 +259,13 @@ Column {data-width=500}
 <!-- ---------- Box Confirmed x Deaths WORLD ---------- -->
 <!-- -------------------------------------------------- -->
 
-
-### confirmed {.value-box}
+### confirmed {.value-box} asdf
 
 ```{r}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = "."), "", sep = " "),
-  caption = "Confirmados no <B>MUNDO</B>",
+  caption = paste0("Confirmados no <B>MUNDO</B> até ", 
+  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
   icon = "fas fa-diagnoses",
   color = confirmed_color
 )
@@ -278,7 +280,8 @@ valueBox(
                 round(100 * sum(df$death, na.rm = TRUE) / 
                         sum(df$confirmed), 1), "%)",
                 sep = ""),
-  caption = "Mortes no <B>MUNDO</B>",
+  caption = paste0("Mortes no <B>MUNDO</B> até ", 
+  as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")),
   icon = "fas fa-heart",
   color = death_color
 )
@@ -291,7 +294,7 @@ valueBox(
 
 
 
-### **Evolução do coronavírus no BRASIL desde 22/01/2020 até**
+### **Evolução do coronavírus no BRASIL desde 22/01/2020 até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
     
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
