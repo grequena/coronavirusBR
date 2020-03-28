@@ -20,15 +20,96 @@ knit: (function(input_file, encoding) {
 library(flexdashboard)
 library(tidyverse)
 library(lubridate)
+library(RCurl)
+#------------------ Data 1 ------------------
 # install.packages("devtools")
 # devtools::install_github("RamiKrispin/coronavirus")
-coronavirus::update_datasets(silence = TRUE)
-library(coronavirus)
-data(coronavirus)
-# update_datasets()
-# View(coronavirus)
+# coronavirus::update_datasets(silence = TRUE)
+# library(coronavirus)
+# data(coronavirus)
+# max(coronavirus$date)
+#------------------ Data 2 (data.humandata.org) cumuled ------------------
+# confirmed cases in wide format
+d.con <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv"))
+# recovered
+d.rec <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv"))
+# death
+d.dea <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv"))
+# confirmed cases in long format
+d.con.long <- reshape(data      = d.con,
+                      varying   = names(d.con)[5:ncol(d.con)],
+                      v.names   = 'cases',
+                      times     = names(d.con)[5:ncol(d.con)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('confirmed', (ncol(d.con)-4)*nrow(d.con))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# recovered
+d.rec.long <- reshape(data      = d.rec,
+                      varying   = names(d.rec)[5:ncol(d.rec)],
+                      v.names   = 'cases',
+                      times     = names(d.rec)[5:ncol(d.rec)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('recovered', (ncol(d.rec)-4)*nrow(d.rec))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# death
+d.dea.long <- reshape(data      = d.dea,
+                      varying   = names(d.dea)[5:ncol(d.dea)],
+                      v.names   = 'cases',
+                      times     = names(d.dea)[5:ncol(d.dea)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('death', (ncol(d.dea)-4)*nrow(d.dea))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# cumuled final data long
+covid.cum <- rbind(d.con.long, 
+                   d.rec.long, 
+                   d.dea.long)
+#------------------ Data 3 (data.humandata.org) daily ------------------
+d.con.daily <- cbind(d.con[, 1:5], # first day, today - yesterday
+                     d.con[, 6:ncol(d.con)] - d.con[, 5:(ncol(d.con)-1)])
+d.rec.daily <- cbind(d.rec[, 1:5], 
+                     d.rec[, 6:ncol(d.rec)] - d.rec[, 5:(ncol(d.rec)-1)])
+d.dea.daily <- cbind(d.dea[, 1:5], 
+                     d.dea[, 6:ncol(d.dea)] - d.dea[, 5:(ncol(d.dea)-1)])
+# confirmed cases in long format
+d.con.daily.long <- reshape(data      = d.con.daily,
+                      varying   = names(d.con.daily)[5:ncol(d.con.daily)],
+                      v.names   = 'cases',
+                      times     = names(d.con.daily)[5:ncol(d.con.daily)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('confirmed', (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# recovered
+d.rec.daily.long <- reshape(data      = d.rec.daily,
+                      varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                      v.names   = 'cases',
+                      times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('recovered', (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# death
+d.dea.daily.long <- reshape(data      = d.dea.daily,
+                      varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                      v.names   = 'cases',
+                      times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                      direction = 'long') %>% 
+  mutate(date = mdy(str_replace_all(time, 'X', '')),
+         type = rep('death', (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
+  select(1, 2, 3, 4, 6, 7, 8, 9)
+# daily final data long
+coronavirus <- rbind(d.con.daily.long,
+                     d.rec.daily.long,
+                     d.dea.daily.long)
 # max(coronavirus$date)
 
+#------------------ Parameters ------------------
+# set colors
+confirmed_colorBR <- rgb(30, 150, 150, maxColorValue = 255)
+death_colorBR <- rgb(220, 40, 40, maxColorValue = 255)
 `%>%` <- magrittr::`%>%`
 ```
 
@@ -39,12 +120,6 @@ data(coronavirus)
 
 
 ```{r data BR, include = F}
-#------------------ Parameters ------------------
-# Set colors
-# https://www.w3.org/TR/css-color-3/#svg-color
-confirmed_colorBR <- rgb(30, 150, 150, maxColorValue = 255)
-death_colorBR <- rgb(220, 40, 40, maxColorValue = 255)
-#------------------ Data ------------------
 dfBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
   dplyr::group_by(Country.Region, type) %>%
@@ -104,8 +179,14 @@ df1 <- coronavirus %>%
 ```
 
 
+<!-- ---------------------------------------------- -->
+<!-- ---------- Dados por Estado BRASIL ---------- -->
+<!-- ---------------------------------------------- -->
 
 
+```{r data BR estado, include = F}
+# coronaBR <- 
+```
 
 
 
@@ -350,19 +431,19 @@ Sobre
 
 **Dashboard para acompanhamento dos casos de COVID-19 no Brasil**
 
-Este dashboard fornece uma descrição estatística sobre a evolução de casos do Novo Coronavírus (COVID-19) no Brasil e no mundo.
+Essa dashboard fornece uma descrição estatística sobre a evolução de casos do Novo Coronavírus (COVID-19) no Brasil e no mundo.
 
-Sua construção foi feita no R através do R Markdown por meio do pacote `flexdashboard`.
+Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"}.
 
 Sua primeira versão é uma adaptação deste [dashboard](https://www.antoinesoetewey.com/files/coronavirus-dashboard.html){target="_blank"} por Antoine Soetewey.
 
 **Código**
 
-O código por trás desse dashboard pode ser acessado no canto superior direito no botão `</> Source Code`.
+O código por trás dessa dashboard pode ser acessado no canto superior direito no botão `</> Source Code`.
 
 **Dados**
 
-O banco de dados utilizado neste dashboard está disponível no pacote do R  [`coronavirus`](https://github.com/RamiKrispin/coronavirus){target="_blank"}.
+O banco de dados utilizado está disponível no pacote do R  [`coronavirus`](https://github.com/RamiKrispin/coronavirus){target="_blank"}.
 
 Os dados originais são atualizados através da Johns Hopkins University   [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
 
