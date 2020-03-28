@@ -2,9 +2,10 @@
 title: "Coronavírus"
 output: 
   flexdashboard::flex_dashboard:
-#    orientation: rows
-    source_code: embed
-    vertical_layout: fill
+   # orientation: rows
+   source_code: embed
+   vertical_layout: scroll
+   runtime: shiny
 editor_options: 
   chunk_output_type: console
 knit: (function(input_file, encoding) {
@@ -21,6 +22,7 @@ library(flexdashboard)
 library(tidyverse)
 library(lubridate)
 library(RCurl)
+library(shiny)
 #------------------ Data 1 ------------------
 # install.packages("devtools")
 # devtools::install_github("RamiKrispin/coronavirus")
@@ -28,13 +30,13 @@ library(RCurl)
 # library(coronavirus)
 # data(coronavirus)
 # max(coronavirus$date)
-#------------------ Data 2 (data.humandata.org) cumuled ------------------
+#------------------ Data 2 (John Hopkins) cumuled ------------------
 # confirmed cases in wide format
-d.con <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv"))
+d.con <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"))
 # recovered
-d.rec <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv"))
+d.rec <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"))
 # death
-d.dea <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv"))
+d.dea <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"))
 # confirmed cases in long format
 d.con.long <- reshape(data      = d.con,
                       varying   = names(d.con)[5:ncol(d.con)],
@@ -110,6 +112,13 @@ coronavirus <- rbind(d.con.daily.long,
 # set colors
 confirmed_colorBR <- rgb(30, 150, 150, maxColorValue = 255)
 death_colorBR <- rgb(220, 40, 40, maxColorValue = 255)
+active_colorBR <- rgb(220, 130, 40, maxColorValue = 255)
+recovered_colorBR <- rgb(20, 120, 20, maxColorValue = 255)
+confirmed_color <- confirmed_colorBR
+death_color <- death_colorBR
+active_color <- active_colorBR
+recovered_color <- recovered_colorBR
+
 `%>%` <- magrittr::`%>%`
 ```
 
@@ -126,8 +135,9 @@ dfBR <- coronavirus %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type,
                      values_from = total) %>%
-  dplyr::mutate(unrecovered = confirmed - ifelse(is.na(death), 0, death)) %>%
-  dplyr::arrange(-confirmed)
+  dplyr::mutate(active = confirmed - 
+                  ifelse(is.na(recovered), 0, recovered)-
+                  ifelse(is.na(death), 0, death))
 
 df_dailyBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
@@ -137,8 +147,13 @@ df_dailyBR <- coronavirus %>%
                      values_from = total) %>%
   dplyr::arrange(date) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(confirmed_cum = cumsum(confirmed),
-                death_cum = cumsum(death))
+  dplyr::mutate(active = confirmed - 
+                  ifelse(is.na(recovered), 0, recovered)-
+                  ifelse(is.na(death), 0, death),
+                confirmed_cum = cumsum(confirmed),
+                death_cum = cumsum(death),
+                active_cum = cumsum(active),
+                recovered_cum = cumsum(recovered))
 
 df1BR <- coronavirus %>% 
   dplyr::filter(date == max(date))
@@ -151,18 +166,16 @@ df1BR <- coronavirus %>%
 
 
 ```{r data world, include = F}
-#------------------ Parameters ------------------
-# Set colors
-# https://www.w3.org/TR/css-color-3/#svg-color
-confirmed_color <- confirmed_colorBR
-death_color <- death_colorBR
 #------------------ Data ------------------
 df <- coronavirus %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type,
                      values_from = total) %>%
-  dplyr::arrange(-confirmed)
+  dplyr::arrange(-confirmed) %>%
+  dplyr::mutate(active = confirmed - 
+                  ifelse(is.na(recovered), 0, recovered)-
+                  ifelse(is.na(death), 0, death))
 
 df_daily <- coronavirus %>%
   dplyr::group_by(date, type) %>%
@@ -171,8 +184,13 @@ df_daily <- coronavirus %>%
                      values_from = total) %>%
   dplyr::arrange(date) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(confirmed_cum = cumsum(confirmed),
-                death_cum = cumsum(death))
+  dplyr::mutate(active = confirmed - 
+                  ifelse(is.na(recovered), 0, recovered)-
+                  ifelse(is.na(death), 0, death),
+                confirmed_cum = cumsum(confirmed),
+                death_cum = cumsum(death),
+                active_cum = cumsum(active),
+                recovered_cum = cumsum(recovered))
 
 df1 <- coronavirus %>% 
   dplyr::filter(date == max(date))
@@ -196,14 +214,14 @@ df1 <- coronavirus %>%
 Resumo
 =======================================================================
 
+
+<!-- ----------------------------------- -->
+<!-- ---------- Boxes BRASIL  ---------- -->
+<!-- ----------------------------------- -->
+
+
 Column {data-width=500}
 -------------------------------------
-
-
-<!-- --------------------------------------------------- -->
-<!-- ---------- Box Confirmed x Deaths BRASIL ---------- -->
-<!-- --------------------------------------------------- -->
-
 
 ### confirmed {.value-box}
 
@@ -218,6 +236,23 @@ valueBox(
 )
 ```
 
+
+
+### recovered {.value-box}
+
+```{r}
+valueBox(
+  value = paste(format(dfBR$recovered, big.mark = ".", decimal.mark = ","), 
+                " (",
+                format(round(100 * (dfBR$recovered / dfBR$confirmed), 1),
+                            big.mark = ",", decimal.mark = ","), 
+                "%)", sep = ""),
+  caption = "Recuperados no <B>BRASIL</B>",
+  icon = "fas fa-user-check",
+  color = recovered_colorBR
+)
+```
+
 ### death {.value-box}
 
 ```{r}
@@ -228,7 +263,7 @@ valueBox(
                             big.mark = ",", decimal.mark = ","), 
                 "%)", sep = ""),
   caption = "Mortes no <B>BRASIL</B>",
-  icon = "fas fa-heart",
+  icon = "fas fa-user-times",
   color = death_colorBR
 )
 ```
@@ -253,6 +288,13 @@ plotly::plot_ly(data = df_dailyBR1) %>%
                     name = "Confirmados",
                     line = list(color = confirmed_colorBR),
                     marker = list(color = confirmed_colorBR)) %>%
+  plotly::add_trace(x = ~date,
+                    y = ~recovered_cum,
+                    type = "scatter",
+                    mode = "lines+markers",
+                    name = "Recuperados",
+                    line = list(color = recovered_colorBR),
+                    marker = list(color = recovered_colorBR)) %>%
   plotly::add_trace(x = ~date,
                     y = ~death_cum,
                     type = "scatter",
@@ -290,13 +332,14 @@ plotly::plot_ly(data = df_dailyBR1) %>%
 ```
 
 
+
+<!-- ------------------------------- --> 
+<!-- ---------- Box  WORLD --------- -->
+<!-- ------------------------------- -->
+
+
 Column {data-width=500}
 -------------------------------------
-
-
-<!-- -------------------------------------------------- -->
-<!-- ---------- Box Confirmed x Deaths WORLD ---------- -->
-<!-- -------------------------------------------------- -->
 
 ### confirmed {.value-box}
 
@@ -304,10 +347,26 @@ Column {data-width=500}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
                 caption = paste("Confirmados no <B>MUNDO</B> • ",
-                                as.character.POSIXt(max(coronavirus$date), 
-                                                    format = "%d/%m/%Y")), 
+                                as.character.POSIXt(max(coronavirus$date),
+                                                    format = "%d/%m/%Y")),
   icon = "fas fa-diagnoses",
   color = confirmed_color
+)
+```
+
+### recovered {.value-box}
+
+```{r}
+valueBox(
+  value = paste(format(sum(df$recovered, na.rm = TRUE),
+                       big.mark = ".", decimal.mark = ","),
+                " (", format(round(100 * sum(df$recovered, na.rm = TRUE) /
+                                     sum(df$confirmed), 1),
+                             big.mark = ".", decimal.mark = ","),
+                "%)", sep = ""),
+  caption = "Recuperados no <B>MUNDO</B>",
+  icon = "fas fa-user-check",
+  color = recovered_color
 )
 ```
 
@@ -315,17 +374,18 @@ valueBox(
 
 ```{r}
 valueBox(
-  value = paste(format(sum(df$death, na.rm = TRUE), 
-                       big.mark = ".", decimal.mark = ","), 
-                " (", format(round(100 * sum(df$death, na.rm = TRUE) / 
-                                     sum(df$confirmed), 1), 
-                             big.mark = ".", decimal.mark = ","), 
+  value = paste(format(sum(df$death, na.rm = TRUE),
+                       big.mark = ".", decimal.mark = ","),
+                " (", format(round(100 * sum(df$death, na.rm = TRUE) /
+                                     sum(df$confirmed), 1),
+                             big.mark = ".", decimal.mark = ","),
                 "%)", sep = ""),
   caption = "Mortes no <B>MUNDO</B>",
-  icon = "fas fa-heart",
+  icon = "fas fa-user-times",
   color = death_color
 )
 ```
+
 
 
 <!-- ---------------------------------------------------- -->
@@ -334,7 +394,7 @@ valueBox(
 
 
 ### **Evolução do coronavírus no MUNDO desde 22/01/2020**
-    
+
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
   plotly::add_trace(x = ~date,
@@ -344,6 +404,13 @@ plotly::plot_ly(data = df_daily) %>%
                     name = "Confirmados",
                     line = list(color = confirmed_color),
                     marker = list(color = confirmed_color)) %>%
+  plotly::add_trace(x = ~date,
+                    y = ~recovered_cum,
+                    type = "scatter",
+                    mode = "lines+markers",
+                    name = "Recuperados",
+                    line = list(color = recovered_color),
+                    marker = list(color = recovered_color)) %>%
   plotly::add_trace(x = ~date,
                     y = ~death_cum,
                     type = "scatter",
@@ -443,6 +510,8 @@ O código por trás dessa dashboard pode ser acessado no canto superior direito 
 
 **Dados**
 
+Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
+
 O banco de dados utilizado está disponível no pacote do R  [`coronavirus`](https://github.com/RamiKrispin/coronavirus){target="_blank"}.
 
 Os dados originais são atualizados através da Johns Hopkins University   [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
@@ -454,7 +523,8 @@ Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mai
 
 **Atualização**
 
-Última atualização:  `r format(Sys.time(), "%d/%m/%Y")`.
+Última atualização:  `r as.character.POSIXt(Sys.time(), 
+                                      format = "%d/%m/%Y às %H:%M")`.
 
 
 
