@@ -5,14 +5,9 @@ output:
    # orientation: rows
    source_code: embed
    vertical_layout: scroll
-   runtime: shiny
 editor_options: 
   chunk_output_type: console
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+runtime: shiny
 ---
 
 
@@ -23,12 +18,14 @@ library(tidyverse)
 library(lubridate)
 library(RCurl)
 library(shiny)
+library(shinythemes)
+library(plotly)
 #------------------ Parameters ------------------
 # set colors
-confirmed_colorBR <- rgb(30, 150, 180, maxColorValue = 255)
-death_colorBR <- rgb(220, 40, 40, maxColorValue = 255, alpha = 180)
-active_colorBR <- rgb(255,110,0, maxColorValue = 255, alpha = 200)
-recovered_colorBR <- rgb(10, 120, 10, maxColorValue = 255, alpha = 180)
+confirmed_colorBR <- rgb(20, 120, 190, maxColorValue = 255)
+death_colorBR <- rgb(220, 40, 40, maxColorValue = 255, alpha = 230)
+active_colorBR <- rgb(255,110,0, maxColorValue = 255)
+recovered_colorBR <- rgb(10, 120, 10, maxColorValue = 255, alpha = 230)
 confirmed_color <- confirmed_colorBR
 death_color <- death_colorBR
 active_color <- active_colorBR
@@ -89,28 +86,28 @@ d.dea.daily <- cbind(d.dea[, 1:5],
                      d.dea[, 6:ncol(d.dea)] - d.dea[, 5:(ncol(d.dea)-1)])
 # confirmed cases in long format
 d.con.daily.long <- reshape(data      = d.con.daily,
-                      varying   = names(d.con.daily)[5:ncol(d.con.daily)],
-                      v.names   = 'cases',
-                      times     = names(d.con.daily)[5:ncol(d.con.daily)],
-                      direction = 'long') %>% 
+                            varying   = names(d.con.daily)[5:ncol(d.con.daily)],
+                            v.names   = 'cases',
+                            times     = names(d.con.daily)[5:ncol(d.con.daily)],
+                            direction = 'long') %>% 
   mutate(date = mdy(str_replace_all(time, 'X', '')),
          type = rep('confirmed', (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>% 
   select(1, 2, 3, 4, 6, 7, 8, 9)
 # recovered
 d.rec.daily.long <- reshape(data      = d.rec.daily,
-                      varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
-                      v.names   = 'cases',
-                      times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
-                      direction = 'long') %>% 
+                            varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                            v.names   = 'cases',
+                            times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                            direction = 'long') %>% 
   mutate(date = mdy(str_replace_all(time, 'X', '')),
          type = rep('recovered', (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>% 
   select(1, 2, 3, 4, 6, 7, 8, 9)
 # death
 d.dea.daily.long <- reshape(data      = d.dea.daily,
-                      varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
-                      v.names   = 'cases',
-                      times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
-                      direction = 'long') %>% 
+                            varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                            v.names   = 'cases',
+                            times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                            direction = 'long') %>% 
   mutate(date = mdy(str_replace_all(time, 'X', '')),
          type = rep('death', (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
   select(1, 2, 3, 4, 6, 7, 8, 9)
@@ -197,17 +194,6 @@ df1 <- coronavirus %>%
 ```
 
 
-<!-- ---------------------------------------------- -->
-<!-- ---------- Dados por Estado BRASIL ---------- -->
-<!-- ---------------------------------------------- -->
-
-
-```{r data BR estado, include = F}
-# coronaBR <- 
-```
-
-
-
 
 
 
@@ -245,7 +231,7 @@ valueBox(
   value = paste(format(dfBR$recovered, big.mark = ".", decimal.mark = ","), 
                 " (",
                 format(round(100 * (dfBR$recovered / dfBR$confirmed), 1),
-                            big.mark = ",", decimal.mark = ","), 
+                       big.mark = ",", decimal.mark = ","), 
                 "%)", sep = ""),
   caption = "Recuperados no <B>BRASIL</B>",
   icon = "fas fa-user-check",
@@ -260,7 +246,7 @@ valueBox(
   value = paste(format(dfBR$death, big.mark = ".", decimal.mark = ","), 
                 " (",
                 format(round(100 * (dfBR$death / dfBR$confirmed), 1),
-                            big.mark = ",", decimal.mark = ","), 
+                       big.mark = ",", decimal.mark = ","), 
                 "%)", sep = ""),
   caption = "Mortes no <B>BRASIL</B>",
   icon = "fas fa-user-times",
@@ -275,7 +261,7 @@ valueBox(
 
 
 ### **Evolução no BRASIL desde 25/02/2020**
-    
+
 ```{r}
 df_dailyBR1 <- df_dailyBR %>% 
   filter(date > "2020-02-24")
@@ -329,7 +315,7 @@ plotly::plot_ly(data = df_dailyBR1) %>%
   plotly::layout(title = "",
                  yaxis = list(title = "Número de casos acumulado"),
                  xaxis = list(title = ""),
-                 legend = list(x = 0.1, y = 0.9),
+                 legend = list(x = 1, y = 0.9),
                  hovermode = "compare")
 ```
 
@@ -373,9 +359,9 @@ Column {data-width=500}
 ```{r}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
-                caption = paste("Confirmados no <B>MUNDO</B> • ",
-                                as.character.POSIXt(max(coronavirus$date),
-                                                    format = "%d/%m/%Y")),
+  caption = paste("Confirmados no <B>MUNDO</B> • ",
+                  as.character.POSIXt(max(coronavirus$date),
+                                      format = "%d/%m/%Y")),
   icon = "fas fa-diagnoses",
   color = confirmed_color
 )
@@ -432,7 +418,7 @@ plotly::plot_ly(data = df_daily) %>%
                     mode = "lines+markers",
                     name = "Confirmados",
                     marker = list(color = confirmed_color, 
-                                  symbol = 'diamond'),
+                                  symbol = 'circle'),
                     line = list(color = confirmed_color)) %>%
   plotly::add_trace(x = ~date,
                     y = ~recovered_cum,
@@ -484,12 +470,93 @@ plotly::plot_ly(data = df_daily,
 
 
 
+Comparação
+=======================================================================
+
+
+
+<!-- ---------------------------------------------- --> 
+<!-- ---------- Chart cumuled freq (shiny)--------- -->
+<!-- ---------------------------------------------- -->
+
+
+Column {data-width=500}
+-------------------------------------
+
+### **Comparação do número de casos CONFIRMADOS entre países/regiões**
+
+```{r}
+
+selectInput("country", "País/Região",
+            choices = c("Mundo", as.character(df$Country.Region)),
+            selected = "Brazil", multiple = T, width = "100%")
+
+selectedData <- reactive({
+  coronavirus %>%
+    dplyr::filter(Country.Region %in% input$country) %>%
+    dplyr::group_by(date, type, Country.Region) %>%
+    dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+    tidyr::pivot_wider(names_from = type,
+                       values_from = total) %>%
+    dplyr::arrange(date) %>%
+    dplyr::group_by(Country.Region) %>% 
+    dplyr::mutate(active = confirmed -
+                    ifelse(is.na(recovered), 0, recovered)-
+                    ifelse(is.na(death), 0, death),
+                  confirmed_cum = cumsum(confirmed),
+                  death_cum = cumsum(death),
+                  recovered_cum = cumsum(recovered))
+})
+renderPlotly({
+  n <- length(input$country)
+  set.seed(1) 
+  cores <- c("darkgreen",
+             sample(rainbow(length(levels(coronavirus$Country.Region)))))
+  fig <- plotly::plot_ly(data = selectedData(),
+                         x = ~date)
+  for(i in 1:n) {
+    aux.df <- selectedData()%>%
+      filter(Country.Region == input$country[i])
+    fig <- plotly::add_trace(fig,
+                             data = aux.df,
+                             x = ~date,
+                             y = ~confirmed_cum,
+                             type = "scatter",
+                             mode = "lines+markers",
+                             name = input$country[i],
+                             marker = list(color = cores[i]),
+                             line = list(color = cores[i]))
+  }
+  fig <- plotly::layout(fig,
+                        title = "",
+                        yaxis = list(title = "Número de casos acumulado"),
+                        xaxis = list(title = ""),
+                        legend = list(x = 0.1, y = 0.9),
+                        hovermode = "compare",
+                        margin = list(l = 40,
+                                      r = 10,
+                                      b = 120,
+                                      t = 10,
+                                      pad = 0)
+                        )
+  fig
+})
+
+
+```
+
+
+
+
+
+
+
 
 
 Mapa
 =======================================================================
 
-### **Mapa mundi - casos confirmados e mortes**
+### **Mapa mundi**
 
 ```{r}
 library(leaflet)
@@ -516,9 +583,9 @@ names(cv_data_for_plot.split) %>%
         fillOpacity = 0.8,
         radius = ~log_cases,
         popup = leafpop::popupTable(cv_data_for_plot.split[[df]],
-          feature.id = FALSE,
-          row.numbers = FALSE,
-          zcol = c("type", "cases", "Country.Region", "Province.State")
+                                    feature.id = FALSE,
+                                    row.numbers = FALSE,
+                                    zcol = c("type", "cases", "Country.Region", "Province.State")
         ),
         group = df,
         #                 clusterOptions = markerClusterOptions(removeOutsideVisibleBounds = F),
@@ -555,15 +622,17 @@ Essa dashboard fornece uma descrição estatística sobre a evolução de casos 
 
 Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"}.
 
-Sua primeira versão é uma adaptação deste [dashboard](https://www.antoinesoetewey.com/files/coronavirus-dashboard.html){target="_blank"} por Antoine Soetewey.
+Sua primeira versão é uma adaptação dessa [dashboard](https://ramikrispin.github.io/coronavirus_dashboard/){target="_blank"} por Rami Krispin.
 
 **Código**
 
-O código por trás dessa dashboard pode ser acessado no canto superior direito no botão `</> Source Code`.
+O código-fonte pode ser acessado no canto superior direito no botão `</> Source Code`.
 
 **Dados**
 
 Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
+
+O portal oficial do Ministério da Saúde com os números de casos confirmados e óbitos no Brasil pode ser visto [aqui](https://covid.saude.gov.br/).
 
 
 **Contato**
@@ -574,7 +643,7 @@ Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mai
 **Atualização**
 
 Última atualização:  `r as.character.POSIXt(Sys.time(), 
-                                      format = "%d/%m/%Y às %H:%M")`.
+format = "%d/%m/%Y às %H:%M")`.
 
 
 
