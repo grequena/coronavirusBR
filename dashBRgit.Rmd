@@ -23,6 +23,18 @@ library(tidyverse)
 library(lubridate)
 library(RCurl)
 library(shiny)
+#------------------ Parameters ------------------
+# set colors
+confirmed_colorBR <- rgb(30, 150, 180, maxColorValue = 255)
+death_colorBR <- rgb(220, 40, 40, maxColorValue = 255, alpha = 180)
+active_colorBR <- rgb(255,110,0, maxColorValue = 255, alpha = 200)
+recovered_colorBR <- rgb(10, 120, 10, maxColorValue = 255, alpha = 180)
+confirmed_color <- confirmed_colorBR
+death_color <- death_colorBR
+active_color <- active_colorBR
+recovered_color <- recovered_colorBR
+
+`%>%` <- magrittr::`%>%`
 #------------------ Data 1 ------------------
 # install.packages("devtools")
 # devtools::install_github("RamiKrispin/coronavirus")
@@ -108,18 +120,6 @@ coronavirus <- rbind(d.con.daily.long,
                      d.dea.daily.long)
 # max(coronavirus$date)
 
-#------------------ Parameters ------------------
-# set colors
-confirmed_colorBR <- rgb(30, 150, 150, maxColorValue = 255)
-death_colorBR <- rgb(220, 40, 40, maxColorValue = 255)
-active_colorBR <- rgb(220, 130, 40, maxColorValue = 255)
-recovered_colorBR <- rgb(20, 120, 20, maxColorValue = 255)
-confirmed_color <- confirmed_colorBR
-death_color <- death_colorBR
-active_color <- active_colorBR
-recovered_color <- recovered_colorBR
-
-`%>%` <- magrittr::`%>%`
 ```
 
 
@@ -274,7 +274,7 @@ valueBox(
 <!-- ----------------------------------------------------- -->
 
 
-### **Evolução do coronavírus no BRASIL desde 25/02/2020**
+### **Evolução no BRASIL desde 25/02/2020**
     
 ```{r}
 df_dailyBR1 <- df_dailyBR %>% 
@@ -293,6 +293,7 @@ plotly::plot_ly(data = df_dailyBR1) %>%
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Recuperados",
+                    opacity = 0.85,
                     line = list(color = recovered_colorBR),
                     marker = list(color = recovered_colorBR)) %>%
   plotly::add_trace(x = ~date,
@@ -300,6 +301,7 @@ plotly::plot_ly(data = df_dailyBR1) %>%
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Mortes",
+                    opacity = 0.85,
                     line = list(color = death_colorBR),
                     marker = list(color = death_colorBR)) %>%
   plotly::add_annotations(x = as.Date("2020-02-26"),
@@ -332,6 +334,31 @@ plotly::plot_ly(data = df_dailyBR1) %>%
 ```
 
 
+### **Casos diários no BRASIL desde 25/02/2020**
+
+```{r chart daily br}
+df_dailyBR1 <- df_dailyBR %>% 
+  filter(date > "2020-02-24")
+
+plotly::plot_ly(data = df_dailyBR1, 
+                x = ~ date, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_color)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_color)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_color)) %>%
+  plotly::layout(barmode = 'overlay',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 hovermode = "compare")
+```
+
+
 
 <!-- ------------------------------- --> 
 <!-- ---------- Box  WORLD --------- -->
@@ -353,6 +380,8 @@ valueBox(
   color = confirmed_color
 )
 ```
+
+
 
 ### recovered {.value-box}
 
@@ -393,7 +422,7 @@ valueBox(
 <!-- ---------------------------------------------------- -->
 
 
-### **Evolução do coronavírus no MUNDO desde 22/01/2020**
+### **Evolução no MUNDO desde 22/01/2020**
 
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
@@ -402,13 +431,15 @@ plotly::plot_ly(data = df_daily) %>%
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Confirmados",
-                    line = list(color = confirmed_color),
-                    marker = list(color = confirmed_color)) %>%
+                    marker = list(color = confirmed_color, 
+                                  symbol = 'diamond'),
+                    line = list(color = confirmed_color)) %>%
   plotly::add_trace(x = ~date,
                     y = ~recovered_cum,
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Recuperados",
+                    opacity = 0.85,
                     line = list(color = recovered_color),
                     marker = list(color = recovered_color)) %>%
   plotly::add_trace(x = ~date,
@@ -416,6 +447,7 @@ plotly::plot_ly(data = df_daily) %>%
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Mortes",
+                    opacity = 0.85,
                     line = list(color = death_color),
                     marker = list(color = death_color)) %>%
   plotly::layout(title = "",
@@ -425,6 +457,27 @@ plotly::plot_ly(data = df_daily) %>%
                  hovermode = "compare")
 ```
 
+
+### **Casos diários no MUNDO desde 22/01/2020**
+
+```{r chart daily}
+plotly::plot_ly(data = df_daily, 
+                x = ~ date, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_color)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_color)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_color)) %>%
+  plotly::layout(barmode = 'overlay',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 hovermode = "compare")
+```
 
 
 
@@ -512,9 +565,6 @@ O código por trás dessa dashboard pode ser acessado no canto superior direito 
 
 Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
 
-O banco de dados utilizado está disponível no pacote do R  [`coronavirus`](https://github.com/RamiKrispin/coronavirus){target="_blank"}.
-
-Os dados originais são atualizados através da Johns Hopkins University   [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
 
 **Contato**
 
