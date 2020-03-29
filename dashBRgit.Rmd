@@ -2,30 +2,21 @@
 title: "Coronavírus"
 output: 
   flexdashboard::flex_dashboard:
-   # orientation: rows
    source_code: embed
    vertical_layout: scroll
-editor_options: 
-  chunk_output_type: console
 runtime: shiny
-
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
-
 
 ```{r setup, include=FALSE}
 #------------------ Packages ------------------
-library(flexdashboard)
-library(tidyverse)
-library(lubridate)
-library(RCurl)
-library(shiny)
-library(shinythemes)
-library(plotly)
+library("flexdashboard")
+library("tidyverse")
+library("lubridate")
+library("RCurl")
+library("shiny")
+library("shinythemes")
+library("plotly")
+
 #------------------ Parameters ------------------
 # set colors
 confirmed_colorBR <- rgb(20, 120, 190, maxColorValue = 255)
@@ -217,7 +208,7 @@ Column {data-width=500}
 
 ### confirmed {.value-box}
 
-```{r}
+```{r box conf br}
 valueBox(
   value = format(dfBR$confirmed, big.mark = ".", decimal.mark = ","),
   caption = paste("Confirmados no <B>BRASIL</B> • ",
@@ -232,7 +223,7 @@ valueBox(
 
 ### recovered {.value-box}
 
-```{r}
+```{r box recov br}
 valueBox(
   value = paste(format(dfBR$recovered, big.mark = ".", decimal.mark = ","), 
                 " (",
@@ -247,7 +238,7 @@ valueBox(
 
 ### death {.value-box}
 
-```{r}
+```{r box death br}
 valueBox(
   value = paste(format(dfBR$death, big.mark = ".", decimal.mark = ","), 
                 " (",
@@ -268,7 +259,7 @@ valueBox(
 
 ### **Evolução no BRASIL desde 25/02/2020**
 
-```{r}
+```{r chart evolucao br}
 df_dailyBR1 <- df_dailyBR %>% 
   filter(date > "2020-02-24")
 
@@ -362,7 +353,7 @@ Column {data-width=500}
 
 ### confirmed {.value-box}
 
-```{r}
+```{r box conf}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
   caption = paste("Confirmados no <B>MUNDO</B> • ",
@@ -377,7 +368,7 @@ valueBox(
 
 ### recovered {.value-box}
 
-```{r}
+```{r box recov}
 valueBox(
   value = paste(format(sum(df$recovered, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
@@ -393,7 +384,7 @@ valueBox(
 
 ### death {.value-box}
 
-```{r}
+```{r box death}
 valueBox(
   value = paste(format(sum(df$death, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
@@ -416,7 +407,7 @@ valueBox(
 
 ### **Evolução no MUNDO desde 22/01/2020**
 
-```{r}
+```{r chart evolucao}
 plotly::plot_ly(data = df_daily) %>%
   plotly::add_trace(x = ~date,
                     y = ~confirmed_cum,
@@ -473,25 +464,16 @@ plotly::plot_ly(data = df_daily,
 
 
 
-
-
-
-Comparação
-=======================================================================
-
-
-
-<!-- ---------------------------------------------- --> 
-<!-- ---------- Chart cumuled freq (shiny)--------- -->
-<!-- ---------------------------------------------- -->
-
+Compare
+=====================================================================
 
 Column {data-width=500}
 -------------------------------------
 
+
 ### **Comparação do número de casos CONFIRMADOS entre países/regiões**
 
-```{r}
+```{r comparacao}
 
 selectInput("country", "País/Região",
             choices = c("Mundo", as.character(df$Country.Region)),
@@ -515,9 +497,7 @@ selectedData <- reactive({
 })
 renderPlotly({
   n <- length(input$country)
-  set.seed(1) 
-  cores <- c("darkgreen",
-             sample(rainbow(length(levels(coronavirus$Country.Region)))))
+  cores <- c("darkgreen", rainbow(20))
   fig <- plotly::plot_ly(data = selectedData(),
                          x = ~date)
   for(i in 1:n) {
@@ -547,16 +527,7 @@ renderPlotly({
                         )
   fig
 })
-
-
 ```
-
-
-
-
-
-
-
 
 
 Mapa
@@ -564,7 +535,7 @@ Mapa
 
 ### **Mapa mundi**
 
-```{r}
+```{r mapa}
 library(leaflet)
 library(leafpop)
 library(purrr)
@@ -626,7 +597,7 @@ Sobre
 
 Essa dashboard fornece uma descrição estatística sobre a evolução de casos do Novo Coronavírus (COVID-19) no Brasil e no mundo.
 
-Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"}.
+Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"} e o [`shiny`](https://shiny.rstudio.com/){target="_blank"}
 
 Sua primeira versão é uma adaptação dessa [dashboard](https://ramikrispin.github.io/coronavirus_dashboard/){target="_blank"} por Rami Krispin.
 
@@ -649,15 +620,4 @@ Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mai
 **Atualização**
 
 Última atualização:  `r as.character.POSIXt(Sys.time(), 
-format = "%d/%m/%Y às %H:%M")`.
-
-
-
-
-
-
-
-
-
-
-<!-- https://resources.github.com/whitepapers/github-and-rstudio/ -->
+format = "%d/%m/%Y")`.
