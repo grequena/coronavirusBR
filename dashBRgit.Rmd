@@ -7,28 +7,19 @@ output:
 runtime: shiny
 ---
 
-```{r setup, include=FALSE}
+
+```{r first, include=FALSE}
 #------------------ Packages ------------------
-library("flexdashboard")
-library("tidyverse")
-library("lubridate")
-library("RCurl")
-library("shiny")
-library("shinythemes")
-library("plotly")
+suppressWarnings(suppressMessages(library(flexdashboard)))
+suppressWarnings(suppressMessages(library(shiny)))
 
 #------------------ Parameters ------------------
 # set colors
-confirmed_colorBR <- rgb(20, 120, 190, maxColorValue = 255)
-death_colorBR <- rgb(220, 40, 40, maxColorValue = 255, alpha = 230)
-active_colorBR <- rgb(255,110,0, maxColorValue = 255)
-recovered_colorBR <- rgb(10, 120, 10, maxColorValue = 255, alpha = 230)
-confirmed_color <- confirmed_colorBR
-death_color <- death_colorBR
-active_color <- active_colorBR
-recovered_color <- recovered_colorBR
+confirmed_color <- rgb(20, 120, 190, maxColorValue = 255)
+death_color <- rgb(220, 40, 40, maxColorValue = 255, alpha = 230)
+recovered_color <- rgb(10, 120, 10, maxColorValue = 255, alpha = 230)
 
-`%>%` <- magrittr::`%>%`
+`%>%` <- magrittr::`%>%` 
 #------------------ Data 1 ------------------
 # install.packages("devtools")
 # devtools::install_github("RamiKrispin/coronavirus")
@@ -49,32 +40,35 @@ d.con.long <- reshape(data      = d.con,
                       v.names   = 'cases',
                       times     = names(d.con)[5:ncol(d.con)],
                       direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('confirmed', (ncol(d.con)-4)*nrow(d.con))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('confirmed', (ncol(d.con)-4)*nrow(d.con))) %>% 
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # recovered
 d.rec.long <- reshape(data      = d.rec,
                       varying   = names(d.rec)[5:ncol(d.rec)],
                       v.names   = 'cases',
                       times     = names(d.rec)[5:ncol(d.rec)],
                       direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('recovered', (ncol(d.rec)-4)*nrow(d.rec))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('recovered', (ncol(d.rec)-4)*nrow(d.rec))) %>% 
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # death
 d.dea.long <- reshape(data      = d.dea,
                       varying   = names(d.dea)[5:ncol(d.dea)],
                       v.names   = 'cases',
                       times     = names(d.dea)[5:ncol(d.dea)],
                       direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('death', (ncol(d.dea)-4)*nrow(d.dea))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('death', (ncol(d.dea)-4)*nrow(d.dea))) %>% 
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # cumuled final data long
 covid.cum <- rbind(d.con.long, 
                    d.rec.long, 
                    d.dea.long)
-#------------------ Data 3 (data.humandata.org) daily ------------------
+#------------------ Data 3 (John Hopkins) daily ------------------
 d.con.daily <- cbind(d.con[, 1:5], # first day, today - yesterday
                      d.con[, 6:ncol(d.con)] - d.con[, 5:(ncol(d.con)-1)])
 d.rec.daily <- cbind(d.rec[, 1:5], 
@@ -82,57 +76,59 @@ d.rec.daily <- cbind(d.rec[, 1:5],
 d.dea.daily <- cbind(d.dea[, 1:5], 
                      d.dea[, 6:ncol(d.dea)] - d.dea[, 5:(ncol(d.dea)-1)])
 # confirmed cases in long format
-d.con.daily.long <- reshape(data      = d.con.daily,
-                            varying   = names(d.con.daily)[5:ncol(d.con.daily)],
-                            v.names   = 'cases',
-                            times     = names(d.con.daily)[5:ncol(d.con.daily)],
-                            direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('confirmed', (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+d.con.daily.l <- reshape(data      = d.con.daily,
+                         varying   = names(d.con.daily)[5:ncol(d.con.daily)],
+                         v.names   = 'cases',
+                         times     = names(d.con.daily)[5:ncol(d.con.daily)],
+                         direction = 'long') %>% 
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('confirmed', (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>%
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # recovered
-d.rec.daily.long <- reshape(data      = d.rec.daily,
-                            varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
-                            v.names   = 'cases',
-                            times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
-                            direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('recovered', (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+d.rec.daily.l <- reshape(data      = d.rec.daily,
+                         varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                         v.names   = 'cases',
+                         times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
+                         direction = 'long') %>% 
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('recovered', (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>%
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # death
-d.dea.daily.long <- reshape(data      = d.dea.daily,
-                            varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
-                            v.names   = 'cases',
-                            times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
-                            direction = 'long') %>% 
-  mutate(date = mdy(str_replace_all(time, 'X', '')),
-         type = rep('death', (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
-  select(1, 2, 3, 4, 6, 7, 8, 9)
+d.dea.daily.l <- reshape(data      = d.dea.daily,
+                         varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                         v.names   = 'cases',
+                         times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
+                         direction = 'long') %>% 
+  dplyr::mutate(date = 
+                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('death', (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
+  dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # daily final data long
-coronavirus <- rbind(d.con.daily.long,
-                     d.rec.daily.long,
-                     d.dea.daily.long)
+coronavirus <- rbind(d.con.daily.l,
+                     d.rec.daily.l,
+                     d.dea.daily.l)
 # max(coronavirus$date)
 
 ```
 
 
-<!-- -------------------------------------------- -->
-<!-- ---------- Data for Charts BRASIL ---------- -->
-<!-- -------------------------------------------- -->
+<!-- --------------------------------------- -->
+<!-- ---------- Data manipulation ---------- -->
+<!-- --------------------------------------- -->
 
 
-```{r data BR, include = F}
+```{r data mani, include = F}
+#------------------ Brazil ------------------
+# total
 dfBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type,
-                     values_from = total) %>%
-  dplyr::mutate(active = confirmed - 
-                  ifelse(is.na(recovered), 0, recovered)-
-                  ifelse(is.na(death), 0, death))
-
+                     values_from = total)
+# daily
 df_dailyBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
   dplyr::group_by(date, type) %>%
@@ -141,35 +137,17 @@ df_dailyBR <- coronavirus %>%
                      values_from = total) %>%
   dplyr::arrange(date) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(active = confirmed - 
-                  ifelse(is.na(recovered), 0, recovered)-
-                  ifelse(is.na(death), 0, death),
-                confirmed_cum = cumsum(confirmed),
+  dplyr::mutate(confirmed_cum = cumsum(confirmed),
                 death_cum = cumsum(death),
-                active_cum = cumsum(active),
                 recovered_cum = cumsum(recovered))
 
-df1BR <- coronavirus %>% 
-  dplyr::filter(date == max(date))
-```
-
-
-<!-- ------------------------------------------- -->
-<!-- ---------- Data for Charts WORLD ---------- -->
-<!-- ------------------------------------------- -->
-
-
-```{r data world, include = F}
-#------------------ Data ------------------
+#------------------ World ------------------
 df <- coronavirus %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type,
                      values_from = total) %>%
-  dplyr::arrange(-confirmed) %>%
-  dplyr::mutate(active = confirmed - 
-                  ifelse(is.na(recovered), 0, recovered)-
-                  ifelse(is.na(death), 0, death))
+  dplyr::arrange(-confirmed)
 
 df_daily <- coronavirus %>%
   dplyr::group_by(date, type) %>%
@@ -178,16 +156,20 @@ df_daily <- coronavirus %>%
                      values_from = total) %>%
   dplyr::arrange(date) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(active = confirmed - 
-                  ifelse(is.na(recovered), 0, recovered)-
-                  ifelse(is.na(death), 0, death),
-                confirmed_cum = cumsum(confirmed),
+  dplyr::mutate(confirmed_cum = cumsum(confirmed),
                 death_cum = cumsum(death),
-                active_cum = cumsum(active),
                 recovered_cum = cumsum(recovered))
 
-df1 <- coronavirus %>% 
-  dplyr::filter(date == max(date))
+df_pais <- coronavirus %>%
+  dplyr::group_by(date, type, Country.Region) %>%
+  dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+  tidyr::pivot_wider(names_from = type,
+                     values_from = total) %>%
+  dplyr::arrange(date) %>%
+  dplyr::group_by(Country.Region) %>%
+  dplyr::mutate(confirmed_cum = cumsum(confirmed),
+                death_cum = cumsum(death),
+                recovered_cum = cumsum(recovered))
 ```
 
 
@@ -209,13 +191,13 @@ Column {data-width=500}
 ### confirmed {.value-box}
 
 ```{r box conf br}
-valueBox(
+flexdashboard::valueBox(
   value = format(dfBR$confirmed, big.mark = ".", decimal.mark = ","),
   caption = paste("Confirmados no <B>BRASIL</B> • ",
                   as.character.POSIXt(max(coronavirus$date), 
                                       format = "%d/%m/%Y")), 
   icon = "fas fa-diagnoses",
-  color = confirmed_colorBR
+  color = confirmed_color
 )
 ```
 
@@ -224,69 +206,67 @@ valueBox(
 ### recovered {.value-box}
 
 ```{r box recov br}
-valueBox(
+flexdashboard::valueBox(
   value = paste(format(dfBR$recovered, big.mark = ".", decimal.mark = ","), 
                 " (",
                 format(round(100 * (dfBR$recovered / dfBR$confirmed), 1),
-                       big.mark = ",", decimal.mark = ","), 
+                       big.mark = ".", decimal.mark = ","), 
                 "%)", sep = ""),
   caption = "Recuperados no <B>BRASIL</B>",
   icon = "fas fa-user-check",
-  color = recovered_colorBR
+  color = recovered_color
 )
 ```
 
 ### death {.value-box}
 
 ```{r box death br}
-valueBox(
+flexdashboard::valueBox(
   value = paste(format(dfBR$death, big.mark = ".", decimal.mark = ","), 
                 " (",
                 format(round(100 * (dfBR$death / dfBR$confirmed), 1),
-                       big.mark = ",", decimal.mark = ","), 
+                       big.mark = ".", decimal.mark = ","), 
                 "%)", sep = ""),
   caption = "Mortes no <B>BRASIL</B>",
   icon = "fas fa-user-times",
-  color = death_colorBR
+  color = death_color
 )
 ```
 
 
-<!-- ----------------------------------------------------- -->
-<!-- ---------- Chart Confirmed x Deaths BRASIL ---------- -->
-<!-- ----------------------------------------------------- -->
+<!-- ------------------------------------------------------------- -->
+<!-- ---------- Chart Confirmed x Recov x Deaths BRASIL ---------- -->
+<!-- ------------------------------------------------------------- -->
 
 
 ### **Evolução no BRASIL desde 25/02/2020**
 
 ```{r chart evolucao br}
-df_dailyBR1 <- df_dailyBR %>% 
-  filter(date > "2020-02-24")
-
-plotly::plot_ly(data = df_dailyBR1) %>%
+plotly::plot_ly(data = df_dailyBR %>% 
+  dplyr::filter(date > "2020-02-24")) %>%
   plotly::add_trace(x = ~date,
                     y = ~confirmed_cum,
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Confirmados",
-                    line = list(color = confirmed_colorBR),
-                    marker = list(color = confirmed_colorBR)) %>%
+                    line = list(color = confirmed_color),
+                    marker = list(color = confirmed_color)) %>%
   plotly::add_trace(x = ~date,
                     y = ~recovered_cum,
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Recuperados",
                     opacity = 0.85,
-                    line = list(color = recovered_colorBR),
-                    marker = list(color = recovered_colorBR)) %>%
+                    line = list(color = recovered_color),
+                    marker = list(color = recovered_color)) %>%
   plotly::add_trace(x = ~date,
                     y = ~death_cum,
                     type = "scatter",
                     mode = "lines+markers",
                     name = "Mortes",
                     opacity = 0.85,
-                    line = list(color = death_colorBR),
-                    marker = list(color = death_colorBR)) %>%
+                    line = list(color = death_color),
+                    marker = list(color = death_color)) %>%
   plotly::add_annotations(x = as.Date("2020-02-26"),
                           y = 1,
                           text = paste("Primeiro caso"),
@@ -310,9 +290,9 @@ plotly::plot_ly(data = df_dailyBR1) %>%
                           ax = 0,
                           ay = -90) %>%
   plotly::layout(title = "",
-                 yaxis = list(title = "Número de casos acumulado"),
+                 yaxis = list(title = "Frequência acumulada de casos"),
                  xaxis = list(title = ""),
-                 legend = list(x = 1, y = 0.9),
+                 legend = list(x = 0.1, y = 0.9),
                  hovermode = "compare")
 ```
 
@@ -320,10 +300,8 @@ plotly::plot_ly(data = df_dailyBR1) %>%
 ### **Casos diários no BRASIL desde 25/02/2020**
 
 ```{r chart daily br}
-df_dailyBR1 <- df_dailyBR %>% 
-  filter(date > "2020-02-24")
-
-plotly::plot_ly(data = df_dailyBR1, 
+plotly::plot_ly(data = df_dailyBR %>% 
+  dplyr::filter(date > "2020-02-24"), 
                 x = ~ date, 
                 y = ~ confirmed, 
                 type = "bar", 
@@ -338,6 +316,7 @@ plotly::plot_ly(data = df_dailyBR1,
   plotly::layout(barmode = 'overlay',
                  yaxis = list(title = "Número de casos"),
                  xaxis = list(title = ""),
+                 legend = list(x = 0.1, y = 0.9),
                  hovermode = "compare")
 ```
 
@@ -354,7 +333,7 @@ Column {data-width=500}
 ### confirmed {.value-box}
 
 ```{r box conf}
-valueBox(
+flexdashboard::valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
   caption = paste("Confirmados no <B>MUNDO</B> • ",
                   as.character.POSIXt(max(coronavirus$date),
@@ -369,7 +348,7 @@ valueBox(
 ### recovered {.value-box}
 
 ```{r box recov}
-valueBox(
+flexdashboard::valueBox(
   value = paste(format(sum(df$recovered, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
                 " (", format(round(100 * sum(df$recovered, na.rm = TRUE) /
@@ -385,7 +364,7 @@ valueBox(
 ### death {.value-box}
 
 ```{r box death}
-valueBox(
+flexdashboard::valueBox(
   value = paste(format(sum(df$death, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
                 " (", format(round(100 * sum(df$death, na.rm = TRUE) /
@@ -459,6 +438,7 @@ plotly::plot_ly(data = df_daily,
   plotly::layout(barmode = 'overlay',
                  yaxis = list(title = "Número de casos"),
                  xaxis = list(title = ""),
+                 legend = list(x = 0.1, y = 0.9),
                  hovermode = "compare")
 ```
 
@@ -467,67 +447,106 @@ plotly::plot_ly(data = df_daily,
 Compare
 =====================================================================
 
+Inputs {.sidebar}
+---------------------------------------------
+
+###
+
+```{r comparacao}
+shiny::selectInput("country", "País/Região:",
+                   choices = c("Mundo", as.character(df$Country.Region)),
+                   selected = c("Brazil", as.character(df$Country.Region[1])),
+                   multiple = T, width = "100%")
+
+shiny::selectInput("type", "Tipo:",
+                   choices = c("Confirmados", "Recuperados", "Mortes"),
+                   selected = "Confirmados", multiple = F, width = "100%")
+
+# shinyselectedData <- reactive({
+#   coronavirus %>%
+#     dplyr::filter(Country.Region %in% input$country) %>%
+#     dplyr::group_by(date, type, Country.Region) %>%
+#     dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+#     tidyr::pivot_wider(names_from = type,
+#                        values_from = total) %>%
+#     dplyr::arrange(date) %>%
+#     dplyr::group_by(Country.Region) %>%
+#     dplyr::dplyr::mutate(confirmed_cum = cumsum(confirmed),
+#                   death_cum = cumsum(death),
+#                   recovered_cum = cumsum(recovered))
+# })
+```
+
+
 Column {data-width=500}
 -------------------------------------
 
+### **Evolução dos casos desde `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
 
-### **Comparação do número de casos CONFIRMADOS entre países/regiões**
-
-```{r comparacao}
-
-selectInput("country", "País/Região",
-            choices = c("Mundo", as.character(df$Country.Region)),
-            selected = "Brazil", multiple = T, width = "100%")
-
-selectedData <- reactive({
-  coronavirus %>%
-    dplyr::filter(Country.Region %in% input$country) %>%
-    dplyr::group_by(date, type, Country.Region) %>%
-    dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
-    tidyr::pivot_wider(names_from = type,
-                       values_from = total) %>%
-    dplyr::arrange(date) %>%
-    dplyr::group_by(Country.Region) %>% 
-    dplyr::mutate(active = confirmed -
-                    ifelse(is.na(recovered), 0, recovered)-
-                    ifelse(is.na(death), 0, death),
-                  confirmed_cum = cumsum(confirmed),
-                  death_cum = cumsum(death),
-                  recovered_cum = cumsum(recovered))
-})
-renderPlotly({
+```{r chart comparacao conf}
+plotly::renderPlotly({
+  fig <- plotly::plot_ly()
   n <- length(input$country)
-  cores <- c("darkgreen", rainbow(20))
-  fig <- plotly::plot_ly(data = selectedData(),
-                         x = ~date)
+  cores <- c("#008000", "#1981CD", "#FFBF00", "#000000", "#00CED1",
+             "#DE3163", "#FF7F50", "#A2006D", "#8EE53F", "#556B2F",
+             "#9400D3", "#00FA9A", "#EE82EE", "#8FBC8F", "#800000")
+  
   for(i in 1:n) {
-    aux.df <- selectedData()%>%
+    aux.df <- df_pais %>%
       filter(Country.Region == input$country[i])
-    fig <- plotly::add_trace(fig,
-                             data = aux.df,
-                             x = ~date,
-                             y = ~confirmed_cum,
-                             type = "scatter",
-                             mode = "lines+markers",
-                             name = input$country[i],
-                             marker = list(color = cores[i]),
-                             line = list(color = cores[i]))
+    if(input$type == "Confirmados") {
+      fig <- plotly::add_trace(fig,
+                               data = aux.df,
+                               x = ~date,
+                               y = ~confirmed_cum,
+                               type = "scatter",
+                               mode = "lines+markers",
+                               name = input$country[i],
+                               showlegend = F,
+                               marker = list(color = cores[i]),
+                               line = list(color = cores[i],
+                                           width = 1))
+    }
+    if(input$type == "Recuperados") {
+      fig <- plotly::add_trace(fig,
+                               data = aux.df,
+                               x = ~date,
+                               y = ~recovered_cum,
+                               type = "scatter",
+                               mode = "lines+markers",
+                               name = input$country[i],
+                               showlegend = F,
+                               marker = list(color = cores[i]),
+                               line = list(color = cores[i],
+                                           width = 1))
+    }
+    if(input$type == "Mortes") {
+      fig <- plotly::add_trace(fig,
+                               data = aux.df,
+                               x = ~date,
+                               y = ~death_cum,
+                               type = "scatter",
+                               mode = "lines+markers",
+                               name = input$country[i],
+                               showlegend = F,
+                               marker = list(color = cores[i]),
+                               line = list(color = cores[i],
+                                           width = 1))
+    }
   }
   fig <- plotly::layout(fig,
                         title = "",
-                        yaxis = list(title = "Número de casos acumulado"),
+                        yaxis = list(title = "Frequência acumulada"),
                         xaxis = list(title = ""),
                         legend = list(x = 0.1, y = 0.9),
-                        hovermode = "compare",
-                        margin = list(l = 40,
-                                      r = 10,
-                                      b = 120,
-                                      t = 10,
-                                      pad = 0)
-                        )
+                        hovermode = "compare"
+  )
   fig
 })
 ```
+
+
+
 
 
 Mapa
@@ -572,7 +591,6 @@ names(cv_data_for_plot.split) %>%
         )
       )
   })
-
 map_object %>%
   addLayersControl(
     overlayGroups = names(cv_data_for_plot.split),
