@@ -2,16 +2,37 @@
 title: "Coronavírus"
 output: 
   flexdashboard::flex_dashboard:
-   source_code: embed
-   vertical_layout: scroll
-runtime: shiny
+    source_code: embed
+    vertical_layout: scroll
+editor_options: 
+  chunk_output_type: console
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 
-```{r first, include=FALSE}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+
+```{r first, include=FALSE,warning=F, message=F}
 #------------------ Packages ------------------
-suppressWarnings(suppressMessages(library(flexdashboard)))
-suppressWarnings(suppressMessages(library(shiny)))
+library(flexdashboard)
+library(shiny)
+# library(plotly)
+# library(countrycode)
+# library(lubridate)
+# library(dplyr)
+# library(magrittr)
+# library(streamgraph)
+# library(hrbrthemes)
+# library(viridis)
+#library(ggplot2)
+# devtools::install_github("hrbrmstr/streamgraph")
 
 #------------------ Parameters ------------------
 # set colors
@@ -81,9 +102,9 @@ d.con.daily.l <- reshape(data      = d.con.daily,
                          v.names   = 'cases',
                          times     = names(d.con.daily)[5:ncol(d.con.daily)],
                          direction = 'long') %>% 
-  dplyr::mutate(date = 
-                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
-                type = rep('confirmed', (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>%
+  dplyr::mutate(date = lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('confirmed', 
+                           (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>%
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # recovered
 d.rec.daily.l <- reshape(data      = d.rec.daily,
@@ -91,9 +112,9 @@ d.rec.daily.l <- reshape(data      = d.rec.daily,
                          v.names   = 'cases',
                          times     = names(d.rec.daily)[5:ncol(d.rec.daily)],
                          direction = 'long') %>% 
-  dplyr::mutate(date = 
-                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
-                type = rep('recovered', (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>%
+  dplyr::mutate(date = lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('recovered', 
+                           (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>%
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # death
 d.dea.daily.l <- reshape(data      = d.dea.daily,
@@ -101,15 +122,23 @@ d.dea.daily.l <- reshape(data      = d.dea.daily,
                          v.names   = 'cases',
                          times     = names(d.dea.daily)[5:ncol(d.dea.daily)],
                          direction = 'long') %>% 
-  dplyr::mutate(date = 
-                  lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
-                type = rep('death', (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
+  dplyr::mutate(date =lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
+                type = rep('death', 
+                           (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
 # daily final data long
 coronavirus <- rbind(d.con.daily.l,
                      d.rec.daily.l,
                      d.dea.daily.l)
 # max(coronavirus$date)
+#------------------ Data 4 (brasil.io) BR por Estado ------------------
+# dbr.munic <- 
+#   read.csv(url("https://brasil.io/dataset/covid19/caso?format=csv")) %>% 
+#   dplyr::mutate(date = as.Date(date))
+# 
+# dbr.estado <- dbr.munic %>% 
+#   dplyr::filter(place_type == "state") %>% 
+#   dplyr::select(-city)
 
 ```
 
@@ -119,7 +148,7 @@ coronavirus <- rbind(d.con.daily.l,
 <!-- --------------------------------------- -->
 
 
-```{r data mani, include = F}
+```{r data mani, include = F,warning=F, message=F}
 #------------------ Brazil ------------------
 # total
 dfBR <- coronavirus %>%
@@ -170,7 +199,44 @@ df_pais <- coronavirus %>%
   dplyr::mutate(confirmed_cum = cumsum(confirmed),
                 death_cum = cumsum(death),
                 recovered_cum = cumsum(recovered))
+#------------------ By continent ------------------
+df_cont1 <- coronavirus %>%
+  dplyr::group_by(date, type, Country.Region, Lat, Long) %>%
+  dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+  tidyr::pivot_wider(names_from = type,
+                     values_from = total) %>%
+  dplyr::arrange(date)
+continent <- countrycode::countrycode(
+  sourcevar = as.character(levels(coronavirus$Country.Region)),
+  origin = "country.name",
+  destination = "continent") 
+df_cont1$continent <- df_cont1$Country.Region
+levels(df_cont1$continent) <- continent
+
+df_cont2 <- df_cont1 %>% 
+  dplyr::group_by(continent, date) %>%
+  dplyr::summarise(confirmed = sum(confirmed,na.rm = T),
+                   recovered = sum(recovered,na.rm = T),
+                   death = sum(death,na.rm = T))
+
+df_cont <- df_cont2 %>% 
+  dplyr::mutate(confirmed_cum = cumsum(confirmed),
+                death_cum = cumsum(death),
+                recovered_cum = cumsum(recovered))
+rm(df_cont1, df_cont2)
+#total=sum(df_cont$confirmed_cum[df_cont$date==max(df_cont$date))
+
+#------------------ Estados ------------------
+
+
+# df_continente <- 
+
+# df_estado <- dbr.estado %>% 
+#   dplyr::group_by(state) %>% 
+#   dplyr::filter(date == max(date)) %>% 
+#   dplyr::select(-place_type, -is_last)
 ```
+
 
 
 
@@ -190,7 +256,7 @@ Column {data-width=500}
 
 ### confirmed {.value-box}
 
-```{r box conf br}
+```{r box conf br,warning=F, message=F}
 flexdashboard::valueBox(
   value = format(dfBR$confirmed, big.mark = ".", decimal.mark = ","),
   caption = paste("Confirmados no <B>BRASIL</B> • ",
@@ -205,7 +271,7 @@ flexdashboard::valueBox(
 
 ### recovered {.value-box}
 
-```{r box recov br}
+```{r box recov br,warning=F, message=F}
 flexdashboard::valueBox(
   value = paste(format(dfBR$recovered, big.mark = ".", decimal.mark = ","), 
                 " (",
@@ -220,7 +286,7 @@ flexdashboard::valueBox(
 
 ### death {.value-box}
 
-```{r box death br}
+```{r box death br,warning=F, message=F}
 flexdashboard::valueBox(
   value = paste(format(dfBR$death, big.mark = ".", decimal.mark = ","), 
                 " (",
@@ -241,9 +307,9 @@ flexdashboard::valueBox(
 
 ### **Evolução no BRASIL desde 25/02/2020**
 
-```{r chart evolucao br}
+```{r chart evolucao br,warning=F, message=F}
 plotly::plot_ly(data = df_dailyBR %>% 
-  dplyr::filter(date > "2020-02-24")) %>%
+                  dplyr::filter(date > "2020-02-24")) %>%
   plotly::add_trace(x = ~date,
                     y = ~confirmed_cum,
                     type = "scatter",
@@ -299,9 +365,9 @@ plotly::plot_ly(data = df_dailyBR %>%
 
 ### **Casos diários no BRASIL desde 25/02/2020**
 
-```{r chart daily br}
+```{r chart daily br,warning=F, message=F}
 plotly::plot_ly(data = df_dailyBR %>% 
-  dplyr::filter(date > "2020-02-24"), 
+                  dplyr::filter(date > "2020-02-24"), 
                 x = ~ date, 
                 y = ~ confirmed, 
                 type = "bar", 
@@ -332,7 +398,7 @@ Column {data-width=500}
 
 ### confirmed {.value-box}
 
-```{r box conf}
+```{r box conf,warning=F, message=F}
 flexdashboard::valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
   caption = paste("Confirmados no <B>MUNDO</B> • ",
@@ -347,7 +413,7 @@ flexdashboard::valueBox(
 
 ### recovered {.value-box}
 
-```{r box recov}
+```{r box recov,warning=F, message=F}
 flexdashboard::valueBox(
   value = paste(format(sum(df$recovered, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
@@ -363,7 +429,7 @@ flexdashboard::valueBox(
 
 ### death {.value-box}
 
-```{r box death}
+```{r box death,warning=F, message=F}
 flexdashboard::valueBox(
   value = paste(format(sum(df$death, na.rm = TRUE),
                        big.mark = ".", decimal.mark = ","),
@@ -386,7 +452,7 @@ flexdashboard::valueBox(
 
 ### **Evolução no MUNDO desde 22/01/2020**
 
-```{r chart evolucao}
+```{r chart evolucao,warning=F, message=F}
 plotly::plot_ly(data = df_daily) %>%
   plotly::add_trace(x = ~date,
                     y = ~confirmed_cum,
@@ -422,7 +488,7 @@ plotly::plot_ly(data = df_daily) %>%
 
 ### **Casos diários no MUNDO desde 22/01/2020**
 
-```{r chart daily}
+```{r chart daily,warning=F, message=F}
 plotly::plot_ly(data = df_daily, 
                 x = ~ date, 
                 y = ~ confirmed, 
@@ -444,105 +510,261 @@ plotly::plot_ly(data = df_daily,
 
 
 
-Compare
+
+
+Mundo {data-orientation=rows}
+=========================================
+
+<!-- Two tabs {.tabset} -->
+<!-- ------------------ -->
+
+Row {data-width=500}
+-------------------------
+
+### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
+
+
+
+
+```{r,warning=F, message=F}
+df_cont <- df_cont %>% 
+  dplyr::ungroup() %>% 
+  dplyr::mutate(continent = factor(continent, levels = rev(c("Asia", "Europe",
+                                                             "Americas",
+                                                             "Africa", 
+                                                             "Oceania")))) %>% 
+  dplyr::filter(continent %in% c("Asia", "Europe", "Americas", "Africa",
+                                 "Oceania"))
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = confirmed_cum, fill = continent)) +
+  ggplot2::geom_area(alpha=0.6 , size=.5, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  ggplot2::ylab("Frequência acumulada de confirmados")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=15)+
+  ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
+                 panel.border     = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=10),
+                 axis.title       = ggplot2::element_text(size=10))
+
+# fig <- plotly::ggplotly(fig, tooltip="all") %>% 
+#   plotly::layout(legend = list(x = 0.1, y = 0.9))
+
+fig
+
+
+```
+
+
+### **<span style="color:#0A780AE6">RECUPERADOS</span> por continente**
+
+
+```{r,warning=F, message=F}
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent)) +
+  ggplot2::geom_area(alpha=0.6 , size=.5, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  ggplot2::ylab("Frequência acumulada de confirmados")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=15)+
+  ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
+                 panel.border     = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=10),
+                 axis.title       = ggplot2::element_text(size=10))
+
+fig
+```
+
+
+### **<span style="color:#DC2828E6">MORTES</span> por continente**
+
+
+```{r,warning=F, message=F}
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = death_cum, fill = continent)) +
+  ggplot2::geom_area(alpha=0.6 , size=.5, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  ggplot2::ylab("Frequência acumulada de confirmados")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=15)+
+  ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
+                 panel.border     = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=10),
+                 axis.title       = ggplot2::element_text(size=10))
+
+fig
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+Compare 
 =====================================================================
 
-Inputs {.sidebar}
----------------------------------------------
 
-###
+Column {data-width=500}
+-------------------------------------
 
-```{r comparacao}
-shiny::selectInput("country", "País/Região:",
-                   choices = c("Mundo", as.character(df$Country.Region)),
-                   selected = c("Brazil", as.character(df$Country.Region[1])),
-                   multiple = T, width = "100%")
+### **Evolução dos CONFIRMADOS desde `r as.character.POSIXt(min(coronavirus$date), format = "%d/%m/%Y")`**
 
-shiny::selectInput("type", "Tipo:",
-                   choices = c("Confirmados", "Recuperados", "Mortes"),
-                   selected = "Confirmados", multiple = F, width = "100%")
+```{r warning=F, message=F}
+country <- c(as.character(df$Country.Region[1:5]))
+n <- 5
 
-# shinyselectedData <- reactive({
-#   coronavirus %>%
-#     dplyr::filter(Country.Region %in% input$country) %>%
-#     dplyr::group_by(date, type, Country.Region) %>%
-#     dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
-#     tidyr::pivot_wider(names_from = type,
-#                        values_from = total) %>%
-#     dplyr::arrange(date) %>%
-#     dplyr::group_by(Country.Region) %>%
-#     dplyr::dplyr::mutate(confirmed_cum = cumsum(confirmed),
-#                   death_cum = cumsum(death),
-#                   recovered_cum = cumsum(recovered))
-# })
+fig1 <- plotly::plot_ly()
+for(i in 1:n) {
+  aux.df <- df_pais %>%
+    dplyr::filter(Country.Region == country[i])
+  fig1 <- plotly::add_trace(fig1,
+                            data = aux.df,
+                            x = ~date,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines+markers",
+                            name = country[i],
+                            showlegend = T,
+                            marker = list(symbol = "circle-open"),
+                            line = list(width = 1))
+}
+aux.df <- df_pais %>%
+  dplyr::filter(Country.Region == "Brazil")
+fig1 <- plotly::add_trace(fig1,
+                          data = aux.df,
+                          x = ~date,
+                          y = ~confirmed_cum,
+                          type = "scatter",
+                          mode = "lines+markers",
+                          name = "Brazil",
+                          showlegend = T,
+                          marker = list(symbol = "circle-open"),
+                          line = list(width = 1))
+fig1 <- plotly::layout(fig1,
+                       title = "",
+                       yaxis = list(title = "Frequência acumulada"),
+                       xaxis = list(title = "Data"),
+                       legend = list(x=0.1, y=0.9),
+                       hovermode = "compare")
+
+
+fig1
 ```
 
 
 Column {data-width=500}
 -------------------------------------
 
-### **Evolução dos casos desde `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`**
+### **Evolução desde o dia do 500º CONFIRMADO **
 
-```{r chart comparacao conf}
-plotly::renderPlotly({
-  fig <- plotly::plot_ly()
-  n <- length(input$country)
-  cores <- c("#008000", "#1981CD", "#FFBF00", "#000000", "#00CED1",
-             "#DE3163", "#FF7F50", "#A2006D", "#8EE53F", "#556B2F",
-             "#9400D3", "#00FA9A", "#EE82EE", "#8FBC8F", "#800000")
-  
-  for(i in 1:n) {
-    aux.df <- df_pais %>%
-      filter(Country.Region == input$country[i])
-    if(input$type == "Confirmados") {
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~confirmed_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               marker = list(color = cores[i]),
-                               line = list(color = cores[i],
-                                           width = 1))
-    }
-    if(input$type == "Recuperados") {
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~recovered_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               marker = list(color = cores[i]),
-                               line = list(color = cores[i],
-                                           width = 1))
-    }
-    if(input$type == "Mortes") {
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~death_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               marker = list(color = cores[i]),
-                               line = list(color = cores[i],
-                                           width = 1))
-    }
-  }
-  fig <- plotly::layout(fig,
-                        title = "",
-                        yaxis = list(title = "Frequência acumulada"),
-                        xaxis = list(title = ""),
-                        legend = list(x = 0.1, y = 0.9),
-                        hovermode = "compare"
-  )
-  fig
-})
+
+```{r warning=F, message=F}
+df_pais_500 <- df_pais %>%
+  dplyr::group_by(Country.Region) %>%
+  dplyr::filter(date >= min(lubridate::ymd(date[confirmed_cum>=500]))) %>%
+  dplyr::mutate(dia=1:sum(date>=min(lubridate::ymd(date[confirmed_cum>=500]))))
+
+fig2 <- plotly::plot_ly()
+
+for(i in 1:n) {
+  aux.df <- df_pais_500 %>%
+    dplyr::filter(Country.Region == country[i])
+  fig2 <- plotly::add_trace(fig2,
+                            data = aux.df,
+                            x = ~dia,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines+markers",
+                            name = country[i],
+                            showlegend = F,
+                            marker = list(symbol = "circle-open"),
+                            line = list(width = 1))
+}
+aux.df <- df_pais_500 %>%
+  dplyr::filter(Country.Region == "Brazil")
+fig2 <- plotly::add_trace(fig2,
+                          data = aux.df,
+                          x = ~dia,
+                          y = ~confirmed_cum,
+                          type = "scatter",
+                          mode = "lines+markers",
+                          name = "Brazil",
+                          showlegend = F,
+                          marker = list(symbol = "circle-open"),
+                          line = list(width = 1))
+fig2 <- plotly::layout(fig2,
+                       title = "",
+                       yaxis = list(title = 
+                                      "Frequência acumulada de CONFIRMADOS"),
+                       xaxis = list(title = "Dia após o 500º caso CONFIRMADO"),
+                       legend = list(x=0.1, y=0.9),
+                       hovermode = "compare")
+fig2
+```
+
+
+
+Column {data-width=500}
+-------------------------------------
+
+### **Situação atual dos casos**
+
+```{r chart comparacao bar}
+country <- c(as.character(df$Country.Region[1:5]), "Brazil")
+# creating a dataset with selected countries, in max(date)
+aux.df <- df_pais %>%
+  dplyr::filter(Country.Region %in% country, date == max(date)) %>%
+  dplyr::arrange(-confirmed_cum) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(Country.Region = as.character(Country.Region))
+# ordering the factor by confirmed_cum size
+aux.df$Country.Region <- factor(aux.df$Country.Region,
+                                levels = aux.df$Country.Region)
+# bar plotly
+fig <- plotly::plot_ly()
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~confirmed_cum,
+                         type = "bar",
+                         name = "Confirmados",
+                         marker = list(color = confirmed_color))
+
+
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~recovered_cum,
+                         type = "bar",
+                         name = "Recuperados",
+                         marker = list(color = recovered_color))
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~death_cum,
+                         type = "bar",
+                         name = "Mortes",
+                         marker = list(color = death_color))
+fig <- plotly::layout(fig,
+                      #barmode = 'overlay',
+                      yaxis = list(title = "Número de casos"),
+                      xaxis = list(title = "País/Região"),
+                      legend = list(x = 0.9, y = 0.9),
+                      hovermode = "compare")
+fig
 ```
 
 
@@ -554,7 +776,7 @@ Mapa
 
 ### **Mapa mundi**
 
-```{r mapa}
+```{r mapa,warning=F, message=F}
 library(leaflet)
 library(leafpop)
 library(purrr)
