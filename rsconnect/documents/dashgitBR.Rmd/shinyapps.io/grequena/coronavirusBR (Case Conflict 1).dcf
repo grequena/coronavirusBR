@@ -1,0 +1,12 @@
+name: coronavirusBR
+title:
+username:
+account: grequena
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2013835
+bundleId: 2941393
+url: https://grequena.shinyapps.io/coronavirusBR/
+when: 1585524704.06302
+asMultiple: FALSE
+asStatic: FALSE
