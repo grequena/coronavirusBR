@@ -2,9 +2,8 @@
 title: "Coronavírus"
 output: 
   flexdashboard::flex_dashboard:
-#    orientation: rows
     source_code: embed
-    vertical_layout: fill
+    vertical_layout: scroll
 editor_options: 
   chunk_output_type: console
 knit: (function(input_file, encoding) {
@@ -525,13 +524,15 @@ Row {data-width=500}
 ### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
 
 
+
+
 ```{r,warning=F, message=F}
 df_cont <- df_cont %>% 
   dplyr::ungroup() %>% 
   dplyr::mutate(continent = factor(continent, levels = rev(c("Asia", "Europe",
-                                                         "Americas",
-                                                         "Africa", 
-                                                         "Oceania")))) %>% 
+                                                             "Americas",
+                                                             "Africa", 
+                                                             "Oceania")))) %>% 
   dplyr::filter(continent %in% c("Asia", "Europe", "Americas", "Africa",
                                  "Oceania"))
 fig <- df_cont %>% 
@@ -550,7 +551,7 @@ fig <- df_cont %>%
 
 # fig <- plotly::ggplotly(fig, tooltip="all") %>% 
 #   plotly::layout(legend = list(x = 0.1, y = 0.9))
-  
+
 fig
 
 
@@ -612,290 +613,155 @@ fig
 
 
 
-Compare
+Compare {data-orientation=rows}
 =====================================================================
 
-Inputs {.sidebar}
----------------------------------------------
 
-
-```{r comparacao fix,warning=F, message=F}
-shiny::selectInput("country", "País/Região:",
-                   choices = as.character(df$Country.Region),
-                   selected = c("Brazil", "China", 
-                                as.character(df$Country.Region[1:3])),
-                   multiple = T, width = "100%")
-
-shiny::selectInput("type", "Tipo:",
-                   choices = c("Confirmados", "Recuperados", "Mortes"),
-                   selected = "Confirmados", multiple = T, width = "100%")
-
-```
-
-
-
-
-Column {data-width=500}
+Row {data-width=500}
 -------------------------------------
 
-### **Evolução dos casos desde `r as.character.POSIXt(min(coronavirus$date), format = "%d/%m/%Y")`**
+### **Evolução dos CONFIRMADOS dos 5 mais afetados + Brasil**
 
-```{r chart comparacao conf fix,warning=F, message=F}
-plotly::renderPlotly({
-  fig <- plotly::plot_ly()
-  n <- length(input$country)
-  cores <- c("#008000", "#1981CD", "#FFBF00", "#800080", "#B7410E",
-             "#DE3163", "#FF7F50", "#A2006D", "#00FA9A", "#556B2F",
-             "#9400D3", "#000000", "#EE82EE", "#8FBC8F", "#800000")
-  showlegend1 = showlegend2 = showlegend3 <- FALSE
-  for(i in 1:n) {
-    aux.df <- df_pais %>%
-      dplyr::filter(Country.Region == input$country[i])
-    if("Confirmados" %in% input$type) {
-      showlegend1 <- T
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~confirmed_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = showlegend1,
-                               legendgroup = 'group1',
-                               marker = list(color = cores[i]),
-                               line = list(color = cores[i],
-                                           width = 1))
-    }
-    if("Recuperados" %in% input$type) {
-      showlegend2 <- ifelse(showlegend1 == F, T, F) 
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~recovered_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = showlegend2,
-                               legendgroup = 'group1',
-                               opacity = .80,
-                               marker = list(color = cores[i],
-                                             symbol = "diamond-open"),
-                               line = list(color = cores[i],
-                                           width = 1,
-                                           dash = "dot"))
-    }
-    if("Mortes" %in% input$type) {
-      showlegend3 <- ifelse((showlegend1 == F & showlegend2 == F), T, F) 
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~date,
-                               y = ~death_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               legendgroup = 'group1',
-                               showlegend = showlegend3,
-                               opacity = .80,
-                               marker = list(color = cores[i],
-                                             symbol = "cross-open"),
-                               line = list(color = cores[i],
-                                           width = 1,
-                                           dash = "dot"))
-    }
-  }
-  fig <- plotly::add_trace(fig,
-                           x = 0,
-                           y = 0,
-                           type = "scatter",
-                           mode = "lines+markers",
-                           name = "Confirmados",
-                           visible = "legendonly",
-                           legendgroup = 'group2',
-                           marker = list(color = "black"),
-                           line = list(width = 1)) %>% 
-    plotly::add_trace(fig,
-                      x = 0,
-                      y = 0,
-                      type = "scatter",
-                      mode = "lines+markers",
-                      name = "Recuperados",
-                      visible = "legendonly",
-                      legendgroup = 'group2',
-                      marker = list(symbol = "diamond-open",
-                                    color = "black"),
-                      line = list(width = 1,
-                                  dash = "dot")) %>% 
-    plotly::add_trace(fig,
-                      x = 0,
-                      y = 0,
-                      type = "scatter",
-                      mode = "lines+markers",
-                      name = "Mortes",
-                      visible = "legendonly",
-                      legendgroup = 'group2',
-                      marker = list(symbol = "cross-open",
-                                    color = "black"),
-                      line = list(width = 1,
-                                  dash = "dot"))
-  
-  fig <- plotly::layout(fig,
-                        title = "",
-                        yaxis = list(title = "Frequência acumulada"),
-                        xaxis = list(title = "Data"),
-                        legend = list(x = 0.1, y = 0.9),
-                        hovermode = "compare"
-  )
-  fig
-})
+```{r warning=F, message=F}
+country <- c(as.character(df$Country.Region[1:5]))
+n <- 5
+
+fig1 <- plotly::plot_ly()
+for(i in 1:n) {
+  aux.df <- df_pais %>%
+    dplyr::filter(Country.Region == country[i])
+  fig1 <- plotly::add_trace(fig1,
+                            data = aux.df,
+                            x = ~date,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines+markers",
+                            name = country[i],
+                            showlegend = T,
+                            marker = list(symbol = "circle-open"),
+                            line = list(width = 1))
+}
+aux.df <- df_pais %>%
+  dplyr::filter(Country.Region == "Brazil")
+fig1 <- plotly::add_trace(fig1,
+                          data = aux.df,
+                          x = ~date,
+                          y = ~confirmed_cum,
+                          type = "scatter",
+                          mode = "lines+markers",
+                          name = "Brazil",
+                          showlegend = T,
+                          marker = list(symbol = "circle-open"),
+                          line = list(width = 1))
+fig1 <- plotly::layout(fig1,
+                       title = "",
+                       yaxis = list(title = "Frequência acumulada"),
+                       xaxis = list(title = "Data"),
+                       legend = list(x=0.1, y=0.9),
+                       hovermode = "compare")
+
+
+fig1
+```
+
+
+
+### **Evolução desde o dia do 500º CONFIRMADO dos 5 mais afetados + Brasil**
+
+
+```{r warning=F, message=F}
+df_pais_500 <- df_pais %>%
+  dplyr::group_by(Country.Region) %>%
+  dplyr::filter(date >= min(lubridate::ymd(date[confirmed_cum>=500]))) %>%
+  dplyr::mutate(dia=1:sum(date>=min(lubridate::ymd(date[confirmed_cum>=500]))))
+
+fig2 <- plotly::plot_ly()
+
+for(i in 1:n) {
+  aux.df <- df_pais_500 %>%
+    dplyr::filter(Country.Region == country[i])
+  fig2 <- plotly::add_trace(fig2,
+                            data = aux.df,
+                            x = ~dia,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines+markers",
+                            name = country[i],
+                            showlegend = F,
+                            marker = list(symbol = "circle-open"),
+                            line = list(width = 1))
+}
+aux.df <- df_pais_500 %>%
+  dplyr::filter(Country.Region == "Brazil")
+fig2 <- plotly::add_trace(fig2,
+                          data = aux.df,
+                          x = ~dia,
+                          y = ~confirmed_cum,
+                          type = "scatter",
+                          mode = "lines+markers",
+                          name = "Brazil",
+                          showlegend = F,
+                          marker = list(symbol = "circle-open"),
+                          line = list(width = 1))
+fig2 <- plotly::layout(fig2,
+                       title = "",
+                       yaxis = list(title = 
+                                      "Frequência acumulada de CONFIRMADOS"),
+                       xaxis = list(title = "Dia após o 500º caso CONFIRMADO"),
+                       legend = list(x=0.1, y=0.9),
+                       hovermode = "compare")
+fig2
 ```
 
 
 
 
-Column {data-width=500}
--------------------------------------
+### **Situação atual dos casos**
 
-### **Evolução a partir do 500º caso confirmado** 
+```{r chart comparacao bar}
+country <- c(as.character(df$Country.Region[1:5]), "Brazil")
+# creating a dataset with selected countries, in max(date)
+aux.df <- df_pais %>%
+  dplyr::filter(Country.Region %in% country, date == max(date)) %>%
+  dplyr::arrange(-confirmed_cum) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(Country.Region = as.character(Country.Region))
+# ordering the factor by confirmed_cum size
+aux.df$Country.Region <- factor(aux.df$Country.Region,
+                                levels = aux.df$Country.Region)
+# bar plotly
+fig <- plotly::plot_ly()
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~confirmed_cum,
+                         type = "bar",
+                         name = "Confirmados",
+                         marker = list(color = confirmed_color))
 
-```{r chart comparacao dia1 fix,warning=F, message=F}
-plotly::renderPlotly({
-  
-  df_pais_500 <- df_pais %>%
-    dplyr::group_by(Country.Region) %>% 
-    dplyr::filter(date >= min(lubridate::ymd(date[confirmed_cum>=500]))) %>% 
-    dplyr::mutate(dia = 
-                    1:sum(date>=min(lubridate::ymd(date[confirmed_cum>=500]))))
-  
-  fig <- plotly::plot_ly()
-  n <- length(input$country)
-  cores <- c("#008000", "#1981CD", "#FFBF00", "#800080", "#B7410E",
-             "#DE3163", "#FF7F50", "#A2006D", "#00FA9A", "#556B2F",
-             "#9400D3", "#000000", "#EE82EE", "#8FBC8F", "#800000")
-  showlegend1 = showlegend2 = showlegend3 <- FALSE
-  for(i in 1:n) {
-    aux.df <- df_pais_500 %>%
-      dplyr::filter(Country.Region == input$country[i])
-    if("Confirmados" %in% input$type) {
-      showlegend1 <- T
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~dia,
-                               y = ~confirmed_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               marker = list(color = cores[i]),
-                               line = list(color = cores[i],
-                                           width = 1))
-    }
-    if("Recuperados" %in% input$type) {
-      showlegend2 <- ifelse(showlegend1 == F, T, F) 
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~dia,
-                               y = ~recovered_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               opacity = .80,
-                               marker = list(color = cores[i],
-                                             symbol = "diamond-open"),
-                               line = list(color = cores[i],
-                                           width = 1,
-                                           dash = "dot"))
-    }
-    if("Mortes" %in% input$type) {
-      showlegend3 <- ifelse((showlegend1 == F & showlegend2 == F), T, F) 
-      fig <- plotly::add_trace(fig,
-                               data = aux.df,
-                               x = ~dia,
-                               y = ~death_cum,
-                               type = "scatter",
-                               mode = "lines+markers",
-                               name = input$country[i],
-                               showlegend = F,
-                               opacity = .80,
-                               marker = list(color = cores[i],
-                                             symbol = "cross-open"),
-                               line = list(color = cores[i],
-                                           width = 1,
-                                           dash = "dot"))
-    }
-  }
-  fig <- plotly::layout(fig,
-                        title = "",
-                        yaxis = list(title = "Frequência acumulada"),
-                        xaxis = list(title = "Dia a partir do 500º caso confirmado"),
-                        legend = list(x = 0.1, y = 0.9),
-                        hovermode = "compare"
-  )
-  fig
-})
+
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~recovered_cum,
+                         type = "bar",
+                         name = "Recuperados",
+                         marker = list(color = recovered_color))
+fig <- plotly::add_trace(fig,
+                         data = aux.df,
+                         x = ~Country.Region,
+                         y = ~death_cum,
+                         type = "bar",
+                         name = "Mortes",
+                         marker = list(color = death_color))
+fig <- plotly::layout(fig,
+                      #barmode = 'overlay',
+                      yaxis = list(title = "Número de casos"),
+                      xaxis = list(title = "País/Região"),
+                      legend = list(x = 0.9, y = 0.9),
+                      hovermode = "compare")
+fig
 ```
-
-
-
-
-
-<!-- Column {data-width=500} -->
-<!-- ------------------------------------- -->
-
-<!-- ### **Situação atual dos casos** -->
-
-<!-- ```{r chart comparacao bar} -->
-<!-- plotly::renderPlotly({ -->
-<!--   # creating a dataset with selected countries, in max(date) -->
-<!--   aux.df <- df_pais %>% -->
-<!--     dplyr::filter(Country.Region %in% input$country, date == max(date)) %>%  -->
-<!--     dplyr::arrange(-confirmed_cum) %>%  -->
-<!--     dplyr::ungroup() %>%  -->
-<!--     dplyr::mutate(Country.Region = as.character(Country.Region)) -->
-<!--   # se "Mundo" for selecionado -->
-<!--   if("Mundo" %in% input$country) { -->
-<!--     aux.df.mundo <- df_daily %>%  -->
-<!--       dplyr::filter(date == max(date)) %>%  -->
-<!--       dplyr::mutate(Country.Region = "Mundo") -->
-<!--     aux.df <- dplyr::bind_rows(aux.df.mundo, aux.df) -->
-<!--   } -->
-<!--   # ordering the factor by confirmed_cum size -->
-<!--   aux.df$Country.Region <- factor(aux.df$Country.Region, -->
-<!--                                   levels = aux.df$Country.Region) -->
-<!--   # bar plotly -->
-<!--   fig <- plotly::plot_ly() -->
-<!--   fig <- plotly::add_trace(fig, -->
-<!--                            data = aux.df, -->
-<!--                            x = ~Country.Region, -->
-<!--                            y = ~confirmed_cum, -->
-<!--                            type = "bar", -->
-<!--                            name = "Confirmados", -->
-<!--                            marker = list(color = confirmed_color)) -->
-
-
-<!--   fig <- plotly::add_trace(fig, -->
-<!--                            data = aux.df, -->
-<!--                            x = ~Country.Region, -->
-<!--                            y = ~recovered_cum, -->
-<!--                            type = "bar", -->
-<!--                            name = "Recuperados", -->
-<!--                            marker = list(color = recovered_color)) -->
-<!--   fig <- plotly::add_trace(fig, -->
-<!--                            data = aux.df, -->
-<!--                            x = ~Country.Region, -->
-<!--                            y = ~death_cum, -->
-<!--                            type = "bar", -->
-<!--                            name = "Mortes", -->
-<!--                            marker = list(color = death_color)) -->
-<!--   fig <- plotly::layout(fig, -->
-<!--                         #barmode = 'overlay', -->
-<!--                         yaxis = list(title = "Número de casos"), -->
-<!--                         xaxis = list(title = "País/Região"), -->
-<!--                         legend = list(x = 0.9, y = 0.9), -->
-<!--                         hovermode = "compare") -->
-<!--   fig -->
-<!-- }) -->
-<!-- ``` -->
 
 
 
