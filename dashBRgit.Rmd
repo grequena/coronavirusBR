@@ -559,7 +559,8 @@ fig <- df_cont %>%
                     size=3, hjust = 1,
                     label = paste("Oceania:",
                                   format(total$con[total$continent=="Oceania"],
-                                         big.mark = ".", decimal.mark = ",")))+  # AFRICA
+                                         big.mark = ".", decimal.mark = ",")))+ 
+  # AFRICA
   ggplot2::annotate(geom = "curve", 
                     x    = lubridate::ymd(max(df_cont$date)),       
                     y = sum(rev(total$con)[1:4]), 
@@ -652,7 +653,8 @@ fig <- df_cont %>%
                     size=3, hjust = 1,
                     label = paste("Oceania:",
                                   format(total$rec[total$continent=="Oceania"],
-                                         big.mark = ".", decimal.mark = ",")))+  # AFRICA
+                                         big.mark = ".", decimal.mark = ",")))+
+  # AFRICA
   ggplot2::annotate(geom = "curve", 
                     x    = lubridate::ymd(max(df_cont$date)),       
                     y = sum(rev(total$rec)[1:4]), 
@@ -745,7 +747,8 @@ fig <- df_cont %>%
                     size=3, hjust = 1,
                     label = paste("Oceania:",
                                   format(total$dea[total$continent=="Oceania"],
-                                         big.mark = ".", decimal.mark = ",")))+  # AFRICA
+                                         big.mark = ".", decimal.mark = ",")))+
+  # AFRICA
   ggplot2::annotate(geom = "curve", 
                     x    = lubridate::ymd(max(df_cont$date)),       
                     y = sum(rev(total$dea)[1:4]), 
