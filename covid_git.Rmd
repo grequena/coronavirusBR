@@ -490,9 +490,6 @@ ____________________________________________________________________________ -->
 
 <<<<<<< HEAD
 ```{r}
-=======
-```{r fig.width=8, fig.height=3}
->>>>>>> 8b66d32497d2c997dcbc96fcb75fcbcc33ed3923
 df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
                                                           "Americas", "Europe",
                                                           "Asia"))
