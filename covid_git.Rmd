@@ -844,7 +844,10 @@ map_object %>%
 
 
 
+Mais
+=======================
 
+Para visualizações interativas acesse https://grequena.shinyapps.io/coronavirusBR
 
 
 
@@ -858,15 +861,20 @@ Sobre
 
 Essa dashboard fornece uma descrição estatística sobre a evolução de casos do Novo Coronavírus (COVID-19) no Brasil e no mundo.
 
-Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"} e o [`shiny`](https://shiny.rstudio.com/){target="_blank"}
+Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"}.
+
 Sua primeira versão é uma adaptação dessa [dashboard](https://ramikrispin.github.io/coronavirus_dashboard/){target="_blank"} por Rami Krispin.
+
 **Código**
 O código-fonte pode ser acessado no canto superior direito no botão `</> Source Code`.
+
 **Dados**
 Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
 O portal oficial do Ministério da Saúde com os números de casos confirmados e óbitos no Brasil pode ser visto [aqui](https://covid.saude.gov.br/).
+
 **Contato**
 Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mail requena@ufv.br.
+
 **Atualização**
 Última atualização:  `r as.character.POSIXt(Sys.time(), 
 format = "%d/%m/%Y")`.
