@@ -488,7 +488,6 @@ ____________________________________________________________________________ -->
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
 
-<<<<<<< HEAD
 ```{r}
 df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
                                                           "Americas", "Europe",
