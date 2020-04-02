@@ -22,10 +22,15 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 #_______________________________________________________________________________
 #_______________________________________________________________________________
 #---------------------------------------------------Loading package and data----
+<<<<<<< HEAD
+#_______________________________________________________________________Packages
+library(flexdashboard) 
+=======
 
 #_______________________________________________________________________Packages
 
 library(flexdashboard)
+>>>>>>> master
 # library(tidyverse)
 # library(shiny)
 # library(plotly)
@@ -36,7 +41,10 @@ library(flexdashboard)
 # library(hrbrthemes)
 # library(viridis)
 #library(ggplot2)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 #_____________________________________________________________________Parameters
 # - Set colors
 confirmed_color <- rgb(20, 120, 190, maxColorValue = 255)
@@ -44,7 +52,10 @@ death_color     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 230)
 recovered_color <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 230)
 # - Use %>% directly
 `%>%` <- magrittr::`%>%` 
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 #_________________________________________________________________________Data 1
 # install.packages("devtools")
 # devtools::install_github("RamiKrispin/coronavirus")
@@ -52,6 +63,15 @@ recovered_color <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 230)
 # library(coronavirus)
 # data(coronavirus)
 # max(coronavirus$date)
+<<<<<<< HEAD
+#_______________________________________________________________Data 2 cumulated
+# - Confirmed cases in wide format
+d.con <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"))
+# - Recovered
+d.rec <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"))
+# - Death
+d.dea <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"))
+=======
 
 #_______________________________________________________________Data 2 cumulated
 
@@ -64,6 +84,7 @@ d.rec <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19
 # - Death
 d.dea <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"))
 
+>>>>>>> master
 # - Confirmed cases in long format
 d.con.long <- reshape(data      = d.con,
                       varying   = names(d.con)[5:ncol(d.con)],
@@ -73,7 +94,10 @@ d.con.long <- reshape(data      = d.con,
   dplyr::mutate(date = lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
                 type = rep('confirmed', (ncol(d.con)-4)*nrow(d.con))) %>% 
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Recovered
 d.rec.long <- reshape(data      = d.rec,
                       varying   = names(d.rec)[5:ncol(d.rec)],
@@ -83,7 +107,10 @@ d.rec.long <- reshape(data      = d.rec,
   dplyr::mutate(date = lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
                 type = rep('recovered', (ncol(d.rec)-4)*nrow(d.rec))) %>% 
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Death
 d.dea.long <- reshape(data      = d.dea,
                       varying   = names(d.dea)[5:ncol(d.dea)],
@@ -93,12 +120,18 @@ d.dea.long <- reshape(data      = d.dea,
   dplyr::mutate(date = lubridate::mdy(stringr::str_replace_all(time, 'X', '')),
                 type = rep('death', (ncol(d.dea)-4)*nrow(d.dea))) %>% 
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+# - Cumulative final data in long format
+covid.cum <- rbind(d.con.long, d.rec.long, d.dea.long)
+#___________________________________________________________________Data 3 daily
+=======
 
 # - Cumulative final data in long format
 covid.cum <- rbind(d.con.long, d.rec.long, d.dea.long)
 
 #___________________________________________________________________Data 3 daily
 
+>>>>>>> master
 # - Daily cases by type in wide format
 d.con.daily <- cbind(d.con[, 1:5], # first day, today - yesterday
                      d.con[, 6:ncol(d.con)] - d.con[, 5:(ncol(d.con)-1)])
@@ -106,7 +139,10 @@ d.rec.daily <- cbind(d.rec[, 1:5],
                      d.rec[, 6:ncol(d.rec)] - d.rec[, 5:(ncol(d.rec)-1)])
 d.dea.daily <- cbind(d.dea[, 1:5], 
                      d.dea[, 6:ncol(d.dea)] - d.dea[, 5:(ncol(d.dea)-1)])
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Confirmed cases in long format
 d.con.daily.l <- reshape(data      = d.con.daily,
                          varying   = names(d.con.daily)[5:ncol(d.con.daily)],
@@ -117,7 +153,10 @@ d.con.daily.l <- reshape(data      = d.con.daily,
                 type = rep('confirmed', 
                            (ncol(d.con.daily)-4)*nrow(d.con.daily))) %>%
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Recovered
 d.rec.daily.l <- reshape(data      = d.rec.daily,
                          varying   = names(d.rec.daily)[5:ncol(d.rec.daily)],
@@ -128,7 +167,10 @@ d.rec.daily.l <- reshape(data      = d.rec.daily,
                 type = rep('recovered', 
                            (ncol(d.rec.daily)-4)*nrow(d.rec.daily))) %>%
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Death
 d.dea.daily.l <- reshape(data      = d.dea.daily,
                          varying   = names(d.dea.daily)[5:ncol(d.dea.daily)],
@@ -139,6 +181,12 @@ d.dea.daily.l <- reshape(data      = d.dea.daily,
                 type = rep('death', 
                            (ncol(d.dea.daily)-4)*nrow(d.dea.daily))) %>% 
   dplyr::select(1, 2, 3, 4, 6, 7, 8, 9)
+<<<<<<< HEAD
+# - Daily final data long
+coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
+# - Check if data is updated
+# max(coronavirus$date)
+=======
 
 # - Daily final data long
 coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
@@ -146,6 +194,7 @@ coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
 # - Check if data is updated
 # max(coronavirus$date)
 
+>>>>>>> master
 #___________________________________________________________Data 4 BR por Estado
 # dbr.munic <- 
 #   read.csv(url("https://brasil.io/dataset/covid19/caso?format=csv")) %>% 
@@ -154,6 +203,12 @@ coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
 # dbr.estado <- dbr.munic %>% 
 #   dplyr::filter(place_type == "state") %>% 
 #   dplyr::select(-city)
+<<<<<<< HEAD
+#_______________________________________________________________________________
+#_______________________________________________________________________________
+#----------------------------------------------------------Data manipulation----
+#_________________________________________________________________________Brazil
+=======
 
 #_______________________________________________________________________________
 #_______________________________________________________________________________
@@ -161,13 +216,17 @@ coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
 
 #_________________________________________________________________________Brazil
 
+>>>>>>> master
 # - Total number of cases in BR (sum for all dates)
 dfBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type, values_from = total)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Daily cases in BR (cases per date)
 df_dailyBR <- coronavirus %>%
   dplyr::filter(Country.Region == "Brazil") %>%
@@ -180,16 +239,23 @@ df_dailyBR <- coronavirus %>%
   dplyr::mutate(confirmed_cum = cumsum(confirmed),
                 death_cum = cumsum(death),
                 recovered_cum = cumsum(recovered))
+<<<<<<< HEAD
+#__________________________________________________________________________World
+=======
 
 #__________________________________________________________________________World
 
+>>>>>>> master
 # - Total cases by country (sum for all dates)
 df <- coronavirus %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::pivot_wider(names_from = type, values_from = total) %>%
   dplyr::arrange(-confirmed)
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Daily cases in world (sum for all countries)
 df_daily <- coronavirus %>%
   dplyr::group_by(date, type) %>%
@@ -201,7 +267,10 @@ df_daily <- coronavirus %>%
   dplyr::mutate(confirmed_cum = cumsum(confirmed),
                 death_cum = cumsum(death),
                 recovered_cum = cumsum(recovered))
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Daily cases by country
 df_pais <- coronavirus %>%
   dplyr::group_by(Country.Region, date, type) %>%
@@ -214,20 +283,29 @@ df_pais <- coronavirus %>%
                 death_cum = cumsum(death),
                 recovered_cum = cumsum(recovered))
 #_____________________________________________________________Daily by continent
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Vector with all countries to extract `continent`
 country <- as.character(levels(coronavirus$Country.Region))
 country[country == "Kosovo"] <- "Russia" #so the function below results "Europe"
 country[country == "Diamond Princess"] <- "Japan" #ship was in Yokohama port
 #                                                  counts for "Asia", not Japan
 country[country == "MS Zaandam"] <- "US" #more complicated but it's in "America" 
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 # - Continent from the vector country
 continent <- countrycode::countrycode(sourcevar = country, 
                                       origin = "country.name",
                                       destination = "continent")
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> master
 # - Data
 df_cont <- df_pais
 levels(df_cont$Country.Region) <- continent #now `Country.Region` is `continent`
@@ -517,6 +595,21 @@ Row {data-width=500} {.tabset}
 <!-- ___________________________________________________________________________
                                                  Chart Stacked area by continent
 ____________________________________________________________________________ -->
+<<<<<<< HEAD
+
+### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
+
+```{r fig.width=8, fig.height=3}
+df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
+                                                          "Americas", "Europe",
+                                                          "Asia"))
+total <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(con=sum(confirmed),
+                   rec=sum(recovered),
+                   dea=sum(death))
+maxdate <- max(df_cont$date)
+=======
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
 
@@ -531,6 +624,7 @@ total <- df_cont %>%
                    dea=sum(death))
 maxdate <- max(df_cont$date)
 
+>>>>>>> master
 fig <- df_cont %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, y = confirmed_cum, fill = continent)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
@@ -834,7 +928,6 @@ Column {data-width=500}
 ```{r}
 country <- c(as.character(df$Country.Region[1:5]))
 n <- 5
-
 fig1 <- plotly::plot_ly()
 for(i in 1:n) {
   aux.df <- df_pais %>%
@@ -868,8 +961,6 @@ fig1 <- plotly::layout(fig1,
                        xaxis = list(title = "Data"),
                        legend = list(x=0.1, y=0.9),
                        hovermode = "compare")
-
-
 fig1
 ```
 
@@ -878,16 +969,17 @@ Column {data-width=500}
 -------------------------------------
 
 ### **Evolução desde o dia do 500º CONFIRMADO **
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> master
 ```{r}
 df_pais_500 <- df_pais %>%
   dplyr::group_by(Country.Region) %>%
   dplyr::filter(date >= min(lubridate::ymd(date[confirmed_cum>=500]))) %>%
   dplyr::mutate(dia=1:sum(date>=min(lubridate::ymd(date[confirmed_cum>=500]))))
-
 fig2 <- plotly::plot_ly()
-
 for(i in 1:n) {
   aux.df <- df_pais_500 %>%
     dplyr::filter(Country.Region == country[i])
@@ -923,12 +1015,17 @@ fig2 <- plotly::layout(fig2,
                        hovermode = "compare")
 fig2
 ```
+<<<<<<< HEAD
+Column {data-width=500}
+-------------------------------------
+=======
 
 
 
 Column {data-width=500}
 -------------------------------------
 
+>>>>>>> master
 ### **Situação atual dos casos**
 
 ```{r}
@@ -951,8 +1048,6 @@ fig <- plotly::add_trace(fig,
                          type = "bar",
                          name = "Confirmados",
                          marker = list(color = confirmed_color))
-
-
 fig <- plotly::add_trace(fig,
                          data = aux.df,
                          x = ~Country.Region,
@@ -1047,26 +1142,14 @@ Sobre
 Essa dashboard fornece uma descrição estatística sobre a evolução de casos do Novo Coronavírus (COVID-19) no Brasil e no mundo.
 
 Sua construção foi feita no R através do R Markdown por meio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/){target="_blank"} e o [`shiny`](https://shiny.rstudio.com/){target="_blank"}
-
 Sua primeira versão é uma adaptação dessa [dashboard](https://ramikrispin.github.io/coronavirus_dashboard/){target="_blank"} por Rami Krispin.
-
 **Código**
-
 O código-fonte pode ser acessado no canto superior direito no botão `</> Source Code`.
-
 **Dados**
-
 Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
-
 O portal oficial do Ministério da Saúde com os números de casos confirmados e óbitos no Brasil pode ser visto [aqui](https://covid.saude.gov.br/).
-
-
 **Contato**
-
 Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mail requena@ufv.br.
-
-
 **Atualização**
-
 Última atualização:  `r as.character.POSIXt(Sys.time(), 
 format = "%d/%m/%Y")`.
