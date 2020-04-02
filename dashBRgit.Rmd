@@ -23,7 +23,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 #_______________________________________________________________________________
 #---------------------------------------------------Loading package and data----
 #_______________________________________________________________________Packages
-library(flexdashboard)
+library(flexdashboard) 
 # library(tidyverse)
 # library(shiny)
 # library(plotly)
