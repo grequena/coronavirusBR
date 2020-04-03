@@ -2,8 +2,12 @@
 title: "Coronavírus"
 output: 
   flexdashboard::flex_dashboard:
+    theme: default
+    css: style.css
     source_code: embed
     vertical_layout: scroll
+markdown_extensions:
+    - admonition
 editor_options: 
   chunk_output_type: console
 knit: (function(input_file, encoding) {
@@ -40,6 +44,9 @@ library(flexdashboard)
 confirmed_color <- rgb(20, 120, 190, maxColorValue = 255)
 death_color     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 230)
 recovered_color <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 230)
+confirmed_colorT <- rgb(20, 120, 190, maxColorValue = 255, alpha = 190)
+death_colorT     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 190)
+recovered_colorT <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 190)
 # - Use %>% directly
 `%>%` <- magrittr::`%>%` 
 #_________________________________________________________________________Data 1
@@ -474,20 +481,85 @@ plotly::plot_ly(data = df_daily,
 
 
 
-Mundo {data-orientation=rows}
-=========================================
+Continentes {data-orientation=rows data-navmenu="Mundo" data-vertical_layout=fill}
+================================================================================
 
 <!-- Two tabs {.tabset} -->
 <!-- ------------------ -->
 
-Row {data-width=500}
--------------------------
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### 
+
+```{r}
+df_cont$continent <- factor(df_cont$continent, levels = 
+                              rev(c("Oceania", "Africa", "Americas", "Europe",
+                                    "Asia")))
+
+dfshow <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(Confirmados = sum(confirmed), 
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  tidyr::pivot_longer(cols = c(continent), values_to = "Continente") %>% 
+  dplyr::select(5, 1, 2, 3)
+sketch <- htmltools::withTags(table(
+    DT::tableHeader(dfshow),
+    DT::tableFooter(sapply(dfshow,
+                           function(x)ifelse(is.numeric(x),sum(x),"Total")))))
+
+DT::datatable(dfshow, rownames = F,
+              options = list(dom = 't',columnDefs = list(
+                # list(targets = , visible = F),
+                list(className = "dt-center", targets = "_all"))),
+              container = sketch) %>% 
+  DT::formatStyle("Continente", target = "row",
+                  backgroundColor = DT::styleEqual(
+                    rev(dfshow$Continente),
+                    viridis::viridis(5, option = "D", alpha = .4)))
+```
+
+###
+
+```{r}
+dfshow <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(confirmed = sum(confirmed), 
+                   recovered = sum(recovered),
+                   death = sum(death)) %>% 
+  tidyr::pivot_longer(cols = c(continent), values_to = "continent") %>% 
+  dplyr::select(5, 1, 2, 3) %>% 
+  dplyr::arrange(-confirmed)
+dfshow$continent <- factor(dfshow$continent, levels = dfshow$continent)
+
+plotly::plot_ly(data = dfshow, 
+                x = ~ continent, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+Row {data-height=350}
+--------------------------------------------------------------------------------
 
 <!-- ___________________________________________________________________________
                                                  Chart Stacked area by continent
 ____________________________________________________________________________ -->
 
-### **<span style="color: #1478BE;">CONFIRMADOS</span>** por **continente**
+### **<span style="color: #1478BE;">CONFIRMADOS</span>**
 
 ```{r}
 df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
@@ -502,7 +574,7 @@ maxdate <- max(df_cont$date)
 fig <- df_cont %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, y = confirmed_cum, fill = continent)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
   ggplot2::ylab("Frequência acumulada")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
@@ -517,14 +589,14 @@ fig
 
 ```
 
-### **<span style="color:#0A780AE6">RECUPERADOS</span>** por **continente**
+### **<span style="color:#0A780AE6">RECUPERADOS</span>**
 
 ```{r}
 fig <- df_cont %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent,
                                tooltip = recovered_cum)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
   ggplot2::ylab("")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
@@ -537,13 +609,13 @@ fig <- df_cont %>%
 fig
 ```
 
-### **<span style="color:#DC2828E6">MORTES</span>** por **continente**
+### **<span style="color:#DC2828E6">MORTES</span>**
 
 ```{r}
 fig <- df_cont %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, y = death_cum, fill = continent)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
   ggplot2::ylab("")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
@@ -556,14 +628,68 @@ fig <- df_cont %>%
 fig
 ```
 
-Row {data-width=500}
--------------------------
+Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
+================================================================================
+
+Row {data-height=500}
+--------------------------------------------------------------------------------
+
+### 
+
+```{r}
+dfshow <- df %>% 
+  dplyr::select(1, 2, 4, 3)
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = dfshow$Country.Region)
+
+names(dfshow) <- c("País/Região", "Confirmados", "Recuperados", "Mortes")
+DT::datatable(dfshow, options = list(
+  columnDefs = list(list(rownames = F, 
+                         className = 'dt-center', 
+                         targets = "_all")),
+  lengthChange = FALSE))
+# DT::formatStyle("País/Região", target = "row",
+#                 backgroundColor = DT::styleEqual(
+#                   dfshow$`País/Região`[1:m],
+#                   viridis::viridis(7, option = "A", alpha = .4)))
+```
+
+###
+
+```{r}
+m <- 10
+dfshow <- df
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = dfshow$Country.Region)
+
+plotly::plot_ly(data = dfshow[1:m, ], 
+                x = ~ Country.Region, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+Row {data-heigth=350}
+--------------------------------------------------------------------------------
 
 <!-- ___________________________________________________________________________
                                             Chart Stacked area m first countries
 ____________________________________________________________________________ -->
 
-### **<span style="color: #1478BE;">CONFIRMADOS</span>** por **país**
+### **<span style="color: #1478BE;">CONFIRMADOS</span>**
 
 ```{r}
 m <- 7
@@ -604,7 +730,7 @@ fig <- df_mpaises %>%
 fig
 ```
 
-### **<span style="color:#0A780AE6">RECUPERADOS</span>** por **país**
+### **<span style="color:#0A780AE6">RECUPERADOS</span>**
 
 ```{r}
 fig <- df_mpaises %>% 
@@ -626,7 +752,7 @@ fig <- df_mpaises %>%
 fig
 ```
 
-### **<span style="color:#DC2828E6">MORTES</span>** por **país**
+### **<span style="color:#DC2828E6">MORTES</span>**
 
 ```{r}
 fig <- df_mpaises %>% 
@@ -648,8 +774,78 @@ fig <- df_mpaises %>%
 fig
 ```
 
+América do Sul {data-orientation=rows data-navmenu="Mundo"}
+================================================================================
 
-Row {data-width=500}
+Row {data-height=500}
+--------------------------------------------------------------------------------
+
+### 
+
+```{r}
+m <- 4
+country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
+                                                       "Brazil", "Chile",
+                                                       "Colombia", "Ecuador",
+                                                       "Guyana", "Paraguay",
+                                                       "Peru", "Suriname",
+                                                       "Uruguay", "Venezuela")]
+
+dfshow <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa) %>%
+  dplyr::summarise(Confirmados = sum(confirmed),
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  dplyr::arrange(-Confirmados)
+
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = as.character(country_sa))
+
+sketch <- htmltools::withTags(table(
+    DT::tableHeader(dfshow),
+    DT::tableFooter(sapply(dfshow,
+                           function(x)ifelse(is.numeric(x),sum(x),"Total")))))
+
+names(dfshow)[1] <- c("País/Região")
+
+DT::datatable(dfshow, rownames = F,
+              options = list(dom = 't',columnDefs = list(
+                list(className = "dt-center", targets = "_all"))),
+              container = sketch) %>% 
+  DT::formatStyle("País/Região", target = "row",
+                  backgroundColor = DT::styleEqual(
+                    rev(dfshow$`País/Região`[1:m]),
+                    viridis::viridis(4, option = "E", alpha = .4)))
+```
+
+###
+
+```{r}
+m <- 10
+dfshow <- df
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = dfshow$Country.Region)
+
+plotly::plot_ly(data = dfshow[1:m, ], 
+                x = ~ Country.Region, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+Row {data-height=350}
 -------------------------
 
 <!-- ___________________________________________________________________________
