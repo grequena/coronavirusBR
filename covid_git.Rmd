@@ -821,21 +821,16 @@ DT::datatable(dfshow, rownames = F,
 ###
 
 ```{r}
-m <- 10
-dfshow <- df
-dfshow$Country.Region <- factor(dfshow$Country.Region, 
-                                levels = dfshow$Country.Region)
-
-plotly::plot_ly(data = dfshow[1:m, ], 
-                x = ~ Country.Region, 
-                y = ~ confirmed, 
+plotly::plot_ly(data = dfshow[1:10, ], 
+                x = ~ `País/Região`, 
+                y = ~ Confirmados, 
                 type = "bar", 
                 name = "Confirmados",
                 marker = list(color = confirmed_colorT)) %>%
-  plotly::add_trace(y = ~ recovered, 
+  plotly::add_trace(y = ~ Recuperados, 
                     name = "Recuperados",
                     marker = list(color = recovered_colorT)) %>%
-  plotly::add_trace(y = ~ death, 
+  plotly::add_trace(y = ~ Mortes, 
                     name = "Mortes",
                     marker = list(color = death_colorT)) %>%
   plotly::layout(barmode = 'group',
