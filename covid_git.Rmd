@@ -33,7 +33,8 @@ library(flexdashboard)
 # library(magrittr)
 # library(hrbrthemes)
 # library(viridis)
-#library(ggplot2)
+# library(ggplot2)
+# library(ggiraph)
 #_____________________________________________________________________Parameters
 # - Set colors
 confirmed_color <- rgb(20, 120, 190, maxColorValue = 255)
@@ -486,7 +487,7 @@ Row {data-width=500}
                                                  Chart Stacked area by continent
 ____________________________________________________________________________ -->
 
-### **<span style="color: #1478BE;">CONFIRMADOS</span> por continente**
+### **<span style="color: #1478BE;">CONFIRMADOS</span>** por **continente**
 
 ```{r}
 df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
@@ -509,46 +510,49 @@ fig <- df_cont %>%
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
 fig
+
+
 ```
 
-### **<span style="color:#0A780AE6">RECUPERADOS</span> por continente**
+### **<span style="color:#0A780AE6">RECUPERADOS</span>** por **continente**
 
 ```{r}
 fig <- df_cont %>% 
-  ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent)) +
+  ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent,
+                               tooltip = recovered_cum)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
   viridis::scale_fill_viridis(discrete = T, name = " ") +
-  ggplot2::ylab("Frequência acumulada")+
+  ggplot2::ylab("")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
   ggplot2::theme_bw(base_size=20)+
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
 fig
 ```
 
-### **<span style="color:#DC2828E6">MORTES</span> por continente**
+### **<span style="color:#DC2828E6">MORTES</span>** por **continente**
 
 ```{r}
 fig <- df_cont %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, y = death_cum, fill = continent)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
   viridis::scale_fill_viridis(discrete = T, name = " ") +
-  ggplot2::ylab("Frequência acumulada")+
+  ggplot2::ylab("")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
   ggplot2::theme_bw(base_size=20)+
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
 fig
 ```
 
@@ -559,7 +563,7 @@ Row {data-width=500}
                                             Chart Stacked area m first countries
 ____________________________________________________________________________ -->
 
-### **<span style="color: #1478BE;">CONFIRMADOS</span> por país**
+### **<span style="color: #1478BE;">CONFIRMADOS</span>** por **país**
 
 ```{r}
 m <- 7
@@ -594,13 +598,13 @@ fig <- df_mpaises %>%
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
  
 fig
 ```
 
-### **<span style="color:#0A780AE6">RECUPERADOS</span> por país**
+### **<span style="color:#0A780AE6">RECUPERADOS</span>** por **país**
 
 ```{r}
 fig <- df_mpaises %>% 
@@ -609,20 +613,20 @@ fig <- df_mpaises %>%
                                fill = Country.Region)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
   viridis::scale_fill_viridis(discrete = T, name = " ", option = "A") +
-  ggplot2::ylab("Frequência acumulada")+
+  ggplot2::ylab("")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
   ggplot2::theme_bw(base_size=20)+
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
  
 fig
 ```
 
-### **<span style="color:#DC2828E6">MORTES</span> por país**
+### **<span style="color:#DC2828E6">MORTES</span>** por **país**
 
 ```{r}
 fig <- df_mpaises %>% 
@@ -631,6 +635,54 @@ fig <- df_mpaises %>%
                                fill = Country.Region)) +
   ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
   viridis::scale_fill_viridis(discrete = T, name = " ", option = "A") +
+  ggplot2::ylab("")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+ 
+fig
+```
+
+
+Row {data-width=500}
+-------------------------
+
+<!-- ___________________________________________________________________________
+                                               Chart Stacked area America do Sul
+____________________________________________________________________________ -->
+
+### **<span style="color: #1478BE;">CONFIRMADOS</span>** na **América do Sul**
+
+```{r}
+m <- 4
+
+country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
+                                                       "Brazil", "Chile",
+                                                       "Colombia", "Ecuador",
+                                                       "Guyana", "Paraguay",
+                                                       "Peru", "Suriname",
+                                                       "Uruguay", "Venezuela")]
+
+df_samerica <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa[1:m]) %>%
+  dplyr::filter(date >= "2020-03-02") %>% 
+  dplyr::arrange(date)
+
+df_samerica$Country.Region <- factor(df_samerica$Country.Region, 
+                                    levels = rev(country_sa[1:m]))
+
+
+fig <- df_samerica %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, 
+                               y = confirmed_cum, 
+                               fill = Country.Region)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "E") +
   ggplot2::ylab("Frequência acumulada")+
   ggplot2::xlab("")+
   ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
@@ -638,8 +690,52 @@ fig <- df_mpaises %>%
   ggplot2::theme(panel.border     = ggplot2::element_blank(),
                  panel.background = ggplot2::element_blank(),
                  legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=10),
-                 axis.title       = ggplot2::element_text(size=10))
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+ 
+fig
+```
+
+### **<span style="color:#0A780AE6">RECUPERADOS</span>** na **América do Sul**
+
+```{r}
+fig <- df_samerica %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, 
+                               y = recovered_cum, 
+                               fill = Country.Region)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "E") +
+  ggplot2::ylab("")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+ 
+fig
+```
+
+### **<span style="color:#DC2828E6">MORTES</span>** na **América do Sul**
+
+```{r}
+fig <- df_samerica %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, 
+                               y = death_cum, 
+                               fill = Country.Region)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "E") +
+  ggplot2::ylab("")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
  
 fig
 ```
