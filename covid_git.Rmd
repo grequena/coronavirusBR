@@ -628,10 +628,10 @@ fig <- df_cont %>%
 fig
 ```
 
-Países mais afetados {data-orientation=rows}
+Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
 
-Row {data-height=500}
+Row {data-height=550}
 --------------------------------------------------------------------------------
 
 ### 
@@ -777,7 +777,7 @@ fig
 América do Sul {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
 
-Row {data-height=500}
+Row {data-height=550}
 --------------------------------------------------------------------------------
 
 ### 
@@ -808,9 +808,12 @@ sketch <- htmltools::withTags(table(
 
 names(dfshow)[1] <- c("País/Região")
 
-DT::datatable(dfshow, rownames = F,
-              options = list(dom = 't',columnDefs = list(
-                list(className = "dt-center", targets = "_all"))),
+DT::datatable(dfshow, rownames = T,
+              options = list(
+                dom = 't',
+                columnDefs = list(
+                  list(className = "dt-center", targets = "_all")),
+                pageLength = 12),
               container = sketch) %>% 
   DT::formatStyle("País/Região", target = "row",
                   backgroundColor = DT::styleEqual(
