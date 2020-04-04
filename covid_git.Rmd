@@ -808,7 +808,7 @@ sketch <- htmltools::withTags(table(
 
 names(dfshow)[1] <- c("País/Região")
 
-DT::datatable(dfshow, rownames = T,
+DT::datatable(dfshow, rownames = F,
               options = list(
                 dom = 't',
                 columnDefs = list(
