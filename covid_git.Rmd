@@ -628,7 +628,7 @@ fig <- df_cont %>%
 fig
 ```
 
-Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
+Países mais afetados {data-orientation=rows}
 ================================================================================
 
 Row {data-height=500}
