@@ -6,7 +6,7 @@ output:
     css: style.css
     source_code: embed
     vertical_layout: scroll
-markdown_extensions:
+markdown_extensions: 
     - admonition
 editor_options: 
   chunk_output_type: console
@@ -225,16 +225,13 @@ df_cont$continent <- df_cont$Country.Region #create the variable continent
 
 
 
-
-Resumo
+<!-- _______________________________________________________________________ -->
+Resumo {data-orientation=rows}
 ================================================================================
+<!-- _______________________________________________________________________ -->
 
-Column {data-width=500}
+Row valueBox CONFIRMADOS {data-heigth=150}
 --------------------------------------------------------------------------------
-
-<!-- ___________________________________________________________________________
-                                                                      Box BRASIL
-____________________________________________________________________________ -->
 
 ### confirmed {.value-box}
 
@@ -248,6 +245,23 @@ flexdashboard::valueBox(
   color = confirmed_color
 )
 ```
+
+
+### confirmed {.value-box}
+
+```{r}
+flexdashboard::valueBox(
+  value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
+  caption = paste("Confirmados no <B>MUNDO</B> • ",
+                  as.character.POSIXt(max(coronavirus$date),
+                                      format = "%d/%m/%Y")),
+  icon = "fas fa-diagnoses",
+  color = confirmed_color
+)
+```
+
+Row valueBox RECUPERADOS {data-heigth=150}
+--------------------------------------------------------------------------------
 
 ### recovered {.value-box}
 
@@ -264,6 +278,25 @@ flexdashboard::valueBox(
 )
 ```
 
+### recovered {.value-box}
+
+```{r}
+flexdashboard::valueBox(
+  value = paste(format(sum(df$recovered, na.rm = TRUE),
+                       big.mark = ".", decimal.mark = ","),
+                " (", format(round(100 * sum(df$recovered, na.rm = TRUE) /
+                                     sum(df$confirmed), 1),
+                             big.mark = ".", decimal.mark = ","),
+                "%)", sep = ""),
+  caption = "Recuperados no <B>MUNDO</B>",
+  icon = "fas fa-user-check",
+  color = recovered_color
+)
+```
+
+Row valueBox MORTES {data-heigth=150}
+--------------------------------------------------------------------------------
+
 ### death {.value-box}
 
 ```{r}
@@ -279,9 +312,24 @@ flexdashboard::valueBox(
 )
 ```
 
-<!-- ___________________________________________________________________________
-                                         Chart Confirmed x Recov x Deaths BRASIL
-____________________________________________________________________________ -->
+### death {.value-box}
+
+```{r}
+flexdashboard::valueBox(
+  value = paste(format(sum(df$death, na.rm = TRUE),
+                       big.mark = ".", decimal.mark = ","),
+                " (", format(round(100 * sum(df$death, na.rm = TRUE) /
+                                     sum(df$confirmed), 1),
+                             big.mark = ".", decimal.mark = ","),
+                "%)", sep = ""),
+  caption = "Mortes no <B>MUNDO</B>",
+  icon = "fas fa-user-times",
+  color = death_color
+)
+```
+
+Row CHARTS CUMULATIVE FREQ {data-orientation=rows data-heigth=350}
+--------------------------------------------------------------------------------
 
 ### **Evolução no BRASIL desde 25/02/2020**
 
@@ -340,86 +388,6 @@ plotly::plot_ly(data = df_dailyBR %>%
                  hovermode = "compare")
 ```
 
-### **Casos diários no BRASIL desde 25/02/2020**
-
-```{r}
-plotly::plot_ly(data = df_dailyBR %>% 
-                  dplyr::filter(date > "2020-02-24"), 
-                x = ~ date, 
-                y = ~ confirmed, 
-                type = "bar", 
-                name = "Confirmados",
-                marker = list(color = confirmed_color)) %>%
-  plotly::add_trace(y = ~ recovered, 
-                    name = "Recuperados",
-                    marker = list(color = recovered_color)) %>%
-  plotly::add_trace(y = ~ death, 
-                    name = "Mortes",
-                    marker = list(color = death_color)) %>%
-  plotly::layout(barmode = 'overlay',
-                 yaxis = list(title = "Número de casos"),
-                 xaxis = list(title = ""),
-                 legend = list(x = 0.1, y = 0.9),
-                 hovermode = "compare")
-```
-
-Column {data-width=500}
---------------------------------------------------------------------------------
-
-<!-- ___________________________________________________________________________
-                                                                       Box WORLD
-____________________________________________________________________________ -->
-
-### confirmed {.value-box}
-
-```{r}
-flexdashboard::valueBox(
-  value = paste(format(sum(df$confirmed), big.mark = ".", decimal.mark = ",")),
-  caption = paste("Confirmados no <B>MUNDO</B> • ",
-                  as.character.POSIXt(max(coronavirus$date),
-                                      format = "%d/%m/%Y")),
-  icon = "fas fa-diagnoses",
-  color = confirmed_color
-)
-```
-
-
-### recovered {.value-box}
-
-```{r}
-flexdashboard::valueBox(
-  value = paste(format(sum(df$recovered, na.rm = TRUE),
-                       big.mark = ".", decimal.mark = ","),
-                " (", format(round(100 * sum(df$recovered, na.rm = TRUE) /
-                                     sum(df$confirmed), 1),
-                             big.mark = ".", decimal.mark = ","),
-                "%)", sep = ""),
-  caption = "Recuperados no <B>MUNDO</B>",
-  icon = "fas fa-user-check",
-  color = recovered_color
-)
-```
-
-### death {.value-box}
-
-```{r}
-flexdashboard::valueBox(
-  value = paste(format(sum(df$death, na.rm = TRUE),
-                       big.mark = ".", decimal.mark = ","),
-                " (", format(round(100 * sum(df$death, na.rm = TRUE) /
-                                     sum(df$confirmed), 1),
-                             big.mark = ".", decimal.mark = ","),
-                "%)", sep = ""),
-  caption = "Mortes no <B>MUNDO</B>",
-  icon = "fas fa-user-times",
-  color = death_color
-)
-```
-
-<!-- ___________________________________________________________________________
-                                         Chart Confirmed x Recov x Deaths BRASIL
-____________________________________________________________________________ -->
-
 ### **Evolução no MUNDO desde 22/01/2020**
 
 ```{r}
@@ -450,6 +418,32 @@ plotly::plot_ly(data = df_daily) %>%
                     marker = list(color = death_color)) %>%
   plotly::layout(title = "",
                  yaxis = list(title = "Número de casos acumulado"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.1, y = 0.9),
+                 hovermode = "compare")
+```
+
+Row CHARTS ABS FREQ {data-heigth=350 data-orientation=rows}
+--------------------------------------------------------------------------------
+
+### **Casos diários no BRASIL desde 25/02/2020**
+
+```{r}
+plotly::plot_ly(data = df_dailyBR %>% 
+                  dplyr::filter(date > "2020-02-24"), 
+                x = ~ date, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_color)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_color)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_color)) %>%
+  plotly::layout(barmode = 'overlay',
+                 yaxis = list(title = "Número de casos"),
                  xaxis = list(title = ""),
                  legend = list(x = 0.1, y = 0.9),
                  hovermode = "compare")
