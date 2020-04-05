@@ -579,10 +579,10 @@ DT::datatable(dfshow,
               ),
               escape = F,
               container = sketch,
-) %>% 
-  DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
-  DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
-  DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
+) 
+  # DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
+  # DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
+  # DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
 #target = "row",
 # backgroundColor = DT::styleEqual(
 # dfshow$`País/Região`[1:m],
@@ -775,10 +775,10 @@ DT::datatable(dfshow,
                 columnDefs = list(list(className = 'dt-center', 
                                        targets = "_all")),
                 lengthChange = FALSE),
-              escape = F) %>% 
-  DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
-  DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
-  DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
+              escape = F) 
+  # DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
+  # DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
+  # DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
 # DT::formatStyle("País/Região", target = "row",
 #                 backgroundColor = DT::styleEqual(
 #                   dfshow$`País/Região`[1:m],
@@ -1027,10 +1027,10 @@ DT::datatable(dfshow,
               ),
               escape = F,
               container = sketch,
-) %>% 
-  DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
-  DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
-  DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
+)  
+  # DT::formatStyle(c(2, 3), backgroundColor = confirmed_colorTT) %>% 
+  # DT::formatStyle(c(4, 5, 6), backgroundColor = recovered_colorTT) %>% 
+  # DT::formatStyle(c(7, 8, 9), backgroundColor = death_colorTT)
   # DT::formatStyle("País/Região", target = "row",
   #                 backgroundColor = DT::styleEqual(
   #                   rev(dfshow$`País/Região`[1:m]),
