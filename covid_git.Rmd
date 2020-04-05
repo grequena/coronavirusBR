@@ -47,9 +47,9 @@ recovered_color <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 230)
 confirmed_colorT <- rgb(20, 120, 190, maxColorValue = 255, alpha = 190)
 death_colorT     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 190)
 recovered_colorT <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 190)
-confirmed_colorTT <- rgb(20, 120, 190, maxColorValue = 255, alpha = 35)
-death_colorTT     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 35)
-recovered_colorTT <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 35)
+confirmed_colorTT <- rgb(20, 120, 190, maxColorValue = 255, alpha = 75)
+death_colorTT     <- rgb(220, 40, 40,  maxColorValue = 255, alpha = 75)
+recovered_colorTT <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 75)
 # - Use %>% directly
 `%>%` <- magrittr::`%>%` 
 #_________________________________________________________________________Data 1
