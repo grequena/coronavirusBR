@@ -27,10 +27,11 @@ Bosnia and Herzegovina;3323929
 Botswana;2254126
 Brazil;209469333
 British Virgin Islands;29802
-Brunei Darussalam;428962
+Brunei;428962
 Bulgaria;7024216
 Burkina Faso;19751535
 Burundi;11175378
+Burma;
 Cabo Verde;543767
 Cambodia;16249798
 Cameroon;25216237
@@ -45,16 +46,17 @@ Chile;18729160
 China;1392730000
 Colombia;49648685
 Comoros;832322
-Congo, Dem. Rep.;84068091
-Congo, Rep.;5244363
+Congo (Kinshasa);84068091
+Congo (Brazzaville);5244363
 Costa Rica;4999441
 Cote d'Ivoire;25069229
 Croatia;4089400
 Cuba;11338138
 Curacao;159849
 Cyprus;1189265
-Czech Republic;10625695
+Czechia;10625695
 Denmark;5797446
+Diamon Princess;
 Djibouti;958920
 Dominica;71625
 Dominican Republic;10627165
@@ -63,7 +65,7 @@ East Asia & Pacific;2328220870
 East Asia & Pacific (excluding high income);2081651801
 East Asia & Pacific (IDA & IBRD countries);2056064424
 Ecuador;17084357
-Egypt, Arab Rep.;98423595
+Egypt;98423595
 El Salvador;6420744
 Equatorial Guinea;1308974
 Eritrea;
@@ -82,7 +84,7 @@ Fragile and conflict affected situations;515215936
 France;66987244
 French Polynesia;277679
 Gabon;2119275
-Gambia, The;2280102
+Gambia;2280102
 Georgia;3731000
 Germany;82927922
 Ghana;29767108
@@ -96,10 +98,11 @@ Guinea;12414318
 Guinea-Bissau;1874309
 Guyana;779004
 Haiti;11123176
+Holy See;618
 Heavily indebted poor countries (HIPC);780234406
 High income;1210312147
 Honduras;9587522
-Hong Kong SAR, China;7451000
+Hong Kong SAR  China;7451000
 Hungary;9768785
 IBRD only;4772284113
 Iceland;353574
@@ -109,7 +112,7 @@ IDA only;1084407516
 IDA total;1640238121
 India;1352617328
 Indonesia;267663435
-Iran, Islamic Rep.;81800269
+Iran;81800269
 Iraq;38433600
 Ireland;4853506
 Isle of Man;84077
@@ -121,12 +124,12 @@ Jordan;9956011
 Kazakhstan;18276499
 Kenya;51393010
 Kiribati;115847
-Korea, Dem. People’s Rep.;25549819
-Korea, Rep.;51635256
+Korea  Dem. People’s Rep.;25549819
+Korea, South;51635256
 Kosovo;1845300
 Kuwait;4137309
-Kyrgyz Republic;6315800
-Lao PDR;7061507
+Kyrgyzstan;6315800
+Laos;7061507
 Late-demographic dividend;2288665963
 Latin America & Caribbean;641357515
 Latin America & Caribbean (excluding high income);609013934
@@ -143,7 +146,7 @@ Low & middle income;6383958209
 Low income;705417321
 Lower middle income;3022905169
 Luxembourg;607728
-Macao SAR, China;631636
+Macao SAR  China;631636
 Madagascar;26262368
 Malawi;18143315
 Malaysia;31528585
@@ -154,7 +157,7 @@ Marshall Islands;58413
 Mauritania;4403319
 Mauritius;1265303
 Mexico;126190788
-Micronesia, Fed. Sts.;112640
+Micronesia;112640
 Middle East & North Africa;448912859
 Middle East & North Africa (excluding high income);382896715
 Middle East & North Africa (IDA & IBRD countries);378327628
@@ -164,6 +167,7 @@ Monaco;38682
 Mongolia;3170208
 Montenegro;622345
 Morocco;36029138
+MS Zaandam;
 Mozambique;29495962
 Myanmar;53708395
 Namibia;2448255
@@ -197,7 +201,7 @@ Pre-demographic dividend;919485393
 Puerto Rico;3195153
 Qatar;2781677
 Romania;19473936
-Russian Federation;144478050
+Russia;144478050
 Rwanda;12301939
 Samoa;196130
 San Marino;33785
@@ -209,7 +213,7 @@ Seychelles;96762
 Sierra Leone;7650154
 Singapore;5638676
 Sint Maarten (Dutch part);40654
-Slovak Republic;5447011
+Slovakia;5447011
 Slovenia;2067372
 Small states;40575321
 Solomon Islands;652858
@@ -220,10 +224,10 @@ South Asia (IDA & IBRD);1814388744
 South Sudan;10975920
 Spain;46723749
 Sri Lanka;21670000
-St. Kitts and Nevis;52441
-St. Lucia;181889
+Saint Kitts and Nevis;52441
+Saint Lucia;181889
 St. Martin (French part);37264
-St. Vincent and the Grenadines;110210
+Saint Vincent and the Grenadines;110210
 Sub-Saharan Africa;1078306520
 Sub-Saharan Africa (excluding high income);1078209758
 Sub-Saharan Africa (IDA & IBRD countries);1078306520
@@ -231,7 +235,8 @@ Sudan;41801533
 Suriname;575991
 Sweden;10183175
 Switzerland;8516543
-Syrian Arab Republic;16906283
+Syria;16906283
+Taiwan*;23577271
 Tajikistan;9100837
 Tanzania;56318348
 Thailand;69428524
@@ -248,16 +253,17 @@ Uganda;42723139
 Ukraine;44622516
 United Arab Emirates;9630959
 United Kingdom;66488991
-United States;327167434
+US;327167434
 Upper middle income;2655635719
 Uruguay;3449299
 Uzbekistan;32955400
 Vanuatu;292680
-Venezuela, RB;28870195
+Venezuela;28870195
 Vietnam;95540395
 Virgin Islands (U.S.);106977
 West Bank and Gaza;4569087
 World;7594270356
-Yemen, Rep.;28498687
+Yemen;28498687
 Zambia;17351822
 Zimbabwe;14439018
+Western Sahara;567402
