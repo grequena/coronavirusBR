@@ -540,11 +540,7 @@ dfshow <- df_cont %>%
         "%"
       ), 
   ) %>% 
-  dplyr::select(1, 2, 7, 3, 8, 5, 4, 9, 6)
-
-# names(dfshow)[c(3, 5, 7)] <- "%"
-# names(dfshow)[8] <- "Taxa de<br>Recuperação" # with escape=F in DT::datatable
-# names(dfshow)[9] <- "Taxa de<br>Mortalidade" 
+  dplyr::select(1,2,3,5,4,6)
 
 sketch <- htmltools::withTags(
   table(
@@ -552,14 +548,14 @@ sketch <- htmltools::withTags(
                     escape = F),# escape = F for html code
     DT::tableFooter(
       list("", "Total", # " " for rownames=T works properly
-           sum(df$confirmed), "100%",
-           sum(df$recovered), "100%",
+           sum(df$confirmed),# "100%",
+           sum(df$recovered),# "100%",
            paste0(
              format(
                round(100*sum(df$recovered)/sum(df$confirmed), 1), 
                decimal.mark = ","),
              "%"),
-           sum(df$death), "100%",
+           sum(df$death),# "100%",
            paste0(
              format(
                round(100*sum(df$death)/sum(df$confirmed), 1), 
@@ -590,11 +586,7 @@ DT::datatable(dfshow,
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
-%M $= \frac{Mortes}{Total(Mortes)}$
- e 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$, 
 Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
 
 Row {data-height=300}
@@ -761,14 +753,14 @@ dfshow <- df %>%
         "%"
       ), 
   ) %>% 
-  dplyr::select(1, 2, 7, 4, 8, 5, 3, 9, 6)
+  dplyr::select(1, 2, 4, 5, 3, 6)
 # dfshow$Country.Region <- factor(dfshow$Country.Region, 
 #                                 levels = dfshow$Country.Region)
 
 names(dfshow)[1] <- "País/Região"
 names(dfshow)[2] <- "Confirmados"
-names(dfshow)[4] <- "Recuperados"
-names(dfshow)[7] <- "Mortes"
+names(dfshow)[3] <- "Recuperados"
+names(dfshow)[5] <- "Mortes"
 
 DT::datatable(dfshow, 
               options = list(
@@ -786,10 +778,7 @@ DT::datatable(dfshow,
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
-%M $= \frac{Mortes}{Total(Mortes)}$,
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$ e 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$, 
 Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
 
 Row {data-height=300}
@@ -987,7 +976,7 @@ dfshow <- df_pais %>%
         "%"
       ), 
   ) %>% 
-  dplyr::select(1, 2, 7, 3, 8, 5, 4, 9, 6)
+  dplyr::select(1, 2, 3, 5, 4, 6)
 
 dfshow$Country.Region <- factor(dfshow$Country.Region, 
                                 levels = as.character(country_sa))
@@ -999,14 +988,14 @@ sketch <- htmltools::withTags(
                     escape = F),# escape = F for html code
     DT::tableFooter(
       list("", "Total", # " " for rownames=T works properly
-           tot.SA$con, "100%",
-           tot.SA$rec, "100%",
+           tot.SA$con, #"100%",
+           tot.SA$rec, #"100%",
            paste0(
              format(
-               round(100*tot.SA$rec/tot.SA$con, 1), 
+               round(100*tot.SA$rec/tot.SA$con, 1),
                decimal.mark = ","),
              "%"),
-           tot.SA$dea, "100%",
+           tot.SA$dea,# "100%",
            paste0(
              format(
                round(100*tot.SA$dea/tot.SA$con, 1), 
@@ -1038,11 +1027,7 @@ DT::datatable(dfshow,
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
 Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
-%M $= \frac{Mortes}{Total(Mortes)}$
- e 
 Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
 
 Row {data-height=300}
