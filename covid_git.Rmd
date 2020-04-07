@@ -56,7 +56,7 @@ recovered_colorT <- rgb(10, 120, 10,  maxColorValue = 255, alpha = 190)
 # library(coronavirus)
 # data(coronavirus)
 # max(coronavirus$date)
-#_______________________________________________________________Data 2 cumulated
+#______________________________________________________________Data 2 cumulative
 # - Confirmed cases in wide format
 d.con <- read.csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"))
 # - Recovered
@@ -142,6 +142,35 @@ coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
 # dbr.estado <- dbr.munic %>% 
 #   dplyr::filter(place_type == "state") %>% 
 #   dplyr::select(-city)
+#_________________________________________________________Data 5 population size
+# Fonte: https://data.worldbank.org/indicator/SP.POP.TOTL
+d.pop <- read.csv(url("https://raw.githubusercontent.com/grequena/coronavirusBR/master/popsize.csv"), sep = ';', header = TRUE)
+# - Select only countries in coronavirus data
+d.pop <- d.pop %>% 
+  dplyr::filter(Country.Name %in% levels(coronavirus$Country.Region)) %>% 
+  dplyr::arrange(Country.Name) %>% 
+  dplyr::mutate(Country.Name = factor(Country.Name, levels = 
+                                        c(levels(Country.Name), "Americas",
+                                                 "Asia", "Africa", "Oceania",
+                                                 "Europe")))
+# - Check
+# levels(coronavirus$Country.Region) == d.pop$Country.Name
+# - Add total pop by continent and world
+# Fonte: https://population.un.org/wpp/
+d.pop[nrow(d.pop)+1, 1] <- "Americas"
+d.pop[nrow(d.pop), 2] <- 579024000+422535000
+d.pop[nrow(d.pop)+1, 1] <- "Asia"
+d.pop[nrow(d.pop), 2] <- 4581757408
+d.pop[nrow(d.pop)+1, 1] <- "Africa"
+d.pop[nrow(d.pop), 2] <- 1216130000
+d.pop[nrow(d.pop)+1, 1] <- "Europe"
+d.pop[nrow(d.pop), 2] <- 738849000
+d.pop[nrow(d.pop)+1, 1] <- "Oceania"
+d.pop[nrow(d.pop), 2] <- 38304000
+d.pop[nrow(d.pop)+1, 1] <- "World"
+d.pop[nrow(d.pop), 2] <- 7576599408
+
+
 #_______________________________________________________________________________
 #_______________________________________________________________________________
 #----------------------------------------------------------Data manipulation----
@@ -225,10 +254,13 @@ df_cont$continent <- df_cont$Country.Region #create the variable continent
 
 
 
-<!-- _______________________________________________________________________ -->
+
 Resumo {data-orientation=rows}
 ================================================================================
-<!-- _______________________________________________________________________ -->
+
+
+
+
 
 Row valueBox CONFIRMADOS {data-heigth=150}
 --------------------------------------------------------------------------------
@@ -246,7 +278,6 @@ flexdashboard::valueBox(
 )
 ```
 
-
 ### confirmed {.value-box}
 
 ```{r}
@@ -259,6 +290,10 @@ flexdashboard::valueBox(
   color = confirmed_color
 )
 ```
+
+
+
+
 
 Row valueBox RECUPERADOS {data-heigth=150}
 --------------------------------------------------------------------------------
@@ -294,6 +329,10 @@ flexdashboard::valueBox(
 )
 ```
 
+
+
+
+
 Row valueBox MORTES {data-heigth=150}
 --------------------------------------------------------------------------------
 
@@ -327,6 +366,10 @@ flexdashboard::valueBox(
   color = death_color
 )
 ```
+
+
+
+
 
 Row CHARTS CUMULATIVE FREQ {data-orientation=rows data-heigth=350}
 --------------------------------------------------------------------------------
@@ -423,6 +466,10 @@ plotly::plot_ly(data = df_daily) %>%
                  hovermode = "compare")
 ```
 
+
+
+
+
 Row CHARTS ABS FREQ {data-heigth=350 data-orientation=rows}
 --------------------------------------------------------------------------------
 
@@ -478,13 +525,17 @@ plotly::plot_ly(data = df_daily,
 Continentes {data-orientation=rows data-navmenu="Mundo" data-vertical_layout=fill}
 ================================================================================
 
+
+
+
+
 <!-- Two tabs {.tabset} -->
 <!-- ------------------ -->
 
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-### 
+###
 
 ```{r}
 dfshow <- df_cont %>% 
@@ -495,53 +546,35 @@ dfshow <- df_cont %>%
   tidyr::pivot_longer(cols = c(continent), values_to = "Continente") %>% 
   dplyr::select(5, 1, 2, 3) %>% 
   dplyr::arrange(-Confirmados) %>% 
+  dplyr::mutate(pop = d.pop[match(Continente, d.pop$Country.Name), 2]) %>% 
   dplyr::mutate(
-    `Taxa de<br>Recuperação` = 
-        paste0(
-          format(
-            round(100*Recuperados/Confirmados, 1),
-            decimal.mark = ",", big.mark = "."
-          ),
-          "%"
-        ),
-    `Taxa de<br>Mortalidade` = 
-      paste0(
-        format(
-          round(100*Mortes/Confirmados, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%C` = 
-      paste0(
-        format(
-          round(100*Confirmados/sum(Confirmados), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%R` = 
-      paste0(
-        format(
-          round(100*Recuperados/sum(Recuperados), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),      
-    `%M` = 
-      paste0(
-        format(
-          round(100*Mortes/sum(Mortes), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ), 
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/sum(Confirmados),
+    `%R` = Recuperados/sum(Recuperados),
+    `%M` = Mortes/sum(Mortes),
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
   ) %>% 
-  dplyr::select(1, 2, 7, 3, 8, 5, 4, 9, 6)
+  dplyr::select("Continente", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  )
 
-# names(dfshow)[c(3, 5, 7)] <- "%"
-# names(dfshow)[8] <- "Taxa de<br>Recuperação" # with escape=F in DT::datatable
-# names(dfshow)[9] <- "Taxa de<br>Mortalidade" 
+names(dfshow)[1] <- ""
+names(dfshow)[2] <- "Conf."
+names(dfshow)[3] <- "% Conf."
+names(dfshow)[4] <- "Recup."
+names(dfshow)[5] <- "% Recup."
+names(dfshow)[7] <- "Mortes"
+names(dfshow)[8] <- "% Mortes"
+names(dfshow)[10] <- "Total<br>Populacional"
+names(dfshow)[11] <- "Conf.<br>em 100k"
+names(dfshow)[12] <- "Recup.<br>em 100k"
+names(dfshow)[13] <- "Mortes<br>em 100k"
 
 sketch <- htmltools::withTags(
   table(
@@ -549,19 +582,47 @@ sketch <- htmltools::withTags(
                     escape = F),# escape = F for html code
     DT::tableFooter(
       list("", "Total", # " " for rownames=T works properly
-           sum(df$confirmed), "100%",
-           sum(df$recovered), "100%",
+           format(sum(df$confirmed), big.mark = ".", decimal.mark = ","), 
+           "100%", 
+           format(sum(df$recovered), big.mark = ".", decimal.mark = ","), 
+           "100%",
            paste0(
              format(
                round(100*sum(df$recovered)/sum(df$confirmed), 1), 
-               decimal.mark = ","),
+               decimal.mark = ",", big.mark = "."),
              "%"),
-           sum(df$death), "100%",
+           format(sum(df$death), big.mark = ".", decimal.mark = ","), 
+           "100%",
            paste0(
              format(
                round(100*sum(df$death)/sum(df$confirmed), 1), 
-               decimal.mark = ","),
-             "%")
+               decimal.mark = ",", big.mark = ","),
+             "%"),
+           format(
+             d.pop$pop2018[d.pop$Country.Name=="World"], 
+            big.mark = ".", decimal.mark = ","
+           ),
+           format(
+             round(
+               100000*(sum(df$confirmed)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(sum(df$recovered)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(sum(df$death)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+            decimal.mark = ",", big.mark = "."
+           )
       )
     )
   )
@@ -575,22 +636,42 @@ DT::datatable(dfshow,
                 lengthChange = FALSE
               ),
               escape = F,
-              container = sketch,
-)
+              container = sketch
+)%>%
+  DT::formatCurrency(c(2, 4, 7, 10), 
+                     currency = "", 
+                     interval = 3, 
+                     mark = ".", 
+                     digits = 0
+  ) %>% 
+  DT::formatPercentage(c(3, 5, 6, 8, 9), 
+                       digits = 1, 
+                       dec.mark = ","
+  ) %>% 
+  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
+  
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$
-%M $= \frac{Mortes}{Total(Mortes)}$
- e 
-Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
+Conf. = Confirmados,
+% Conf. $= \frac{Confirmados}{Total(Confirmados)}$, 
+Recup. = Recuperados,
+% Recup. $= \frac{Recuperados}{Total(Recuperados)}$, 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
+% Mortes $= \frac{Mortes}{Total(Mortes)}$,
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$,
+Conf. em 100k = $100.000\frac{Confirmados}{Total Populacional}$,
+Recup. em 100k = $100.000\frac{Recuperados}{Total Populacional}$ e
+Mortes em 100k = $100.000\frac{Mortes}{Total Populacional}$. <br>
+Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, dos quais "Recup. em 100k" se recuperaram e "Mortes em 100k" foram a óbito. Por exemplo, na Europa, `r round(dfshow[,11][dfshow[,1]=="Europe"], 1)` a cada 100.000 foram confirmados, dos quais `r round(dfshow[,12][dfshow[,1]=="Europe"], 1)` se recuperaram e `r round(dfshow[,13][dfshow[,1]=="Europe"], 1)` morreram.
+
+
+
 
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-###
+### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
 dfshow <- df_cont %>% 
@@ -622,12 +703,12 @@ plotly::plot_ly(data = dfshow,
                  hovermode = "compare")
 ```
 
+
+
+
+
 Row {data-height=350}
 --------------------------------------------------------------------------------
-
-<!-- ___________________________________________________________________________
-                                                 Chart Stacked area by continent
-____________________________________________________________________________ -->
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span>**
 
@@ -698,8 +779,16 @@ fig <- df_cont %>%
 fig
 ```
 
+
+
+
+
 Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
+
+
+
+
 
 Row {data-height=550}
 --------------------------------------------------------------------------------
@@ -718,7 +807,7 @@ dfshow <- df %>%
           ),
           "%"
         ),
-    `Taxa de<br>Mortalidade` = 
+    `Taxa de<br>Letalidade` = 
       paste0(
         format(
           round(100*death/confirmed, 1),
@@ -777,12 +866,16 @@ DT::datatable(dfshow,
 %R $= \frac{Recuperados}{Total(Recuperados)}$, 
 Taxa de recuperação $= \frac{Recuperados}{Confirmados}$
 %M $= \frac{Mortes}{Total(Mortes)}$ e 
-Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$.
+
+
+
+
 
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-###
+### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
 m <- 20
@@ -810,12 +903,11 @@ plotly::plot_ly(data = dfshow[1:m, ],
 ```
 
 
+
+
+
 Row {data-height=350}
 --------------------------------------------------------------------------------
-
-<!-- ___________________________________________________________________________
-                                            Chart Stacked area m first countries
-____________________________________________________________________________ -->
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span>**
 
@@ -902,8 +994,16 @@ fig <- df_mpaises %>%
 fig
 ```
 
+
+
+
+
 América do Sul {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
+
+
+
+
 
 Row {data-height=600}
 --------------------------------------------------------------------------------
@@ -945,7 +1045,7 @@ dfshow <- df_pais %>%
           ),
           "%"
         ),
-    `Taxa de<br>Mortalidade` = 
+    `Taxa de<br>Letalidade` = 
       paste0(
         format(
           round(100*Mortes/Confirmados, 1),
@@ -1027,15 +1127,19 @@ DT::datatable(dfshow, rownames = T,
 %R $= \frac{Recuperados}{Total(Recuperados)}$, 
 Taxa de recuperação $= \frac{Recuperados}{Confirmados}$
 %M $= \frac{Mortes}{Total(Mortes)}$ e 
-Taxa de mortalidade $= \frac{Mortes}{Confirmados}$.
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$.
+
+
+
+
 
 Row {data-height=300}
 -------------------------
 
-###
+### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
-plotly::plot_ly(data = dfshow[1:10, ], 
+plotly::plot_ly(data = dfshow, 
                 x = ~ `País/Região`, 
                 y = ~ Confirmados, 
                 type = "bar", 
@@ -1054,14 +1158,14 @@ plotly::plot_ly(data = dfshow[1:10, ],
                  hovermode = "compare")
 ```
 
+
+
+
+
 Row {data-height=350}
 -------------------------
 
-<!-- ___________________________________________________________________________
-                                               Chart Stacked area America do Sul
-____________________________________________________________________________ -->
-
-### **<span style="color: #1478BE;">CONFIRMADOS</span>** na **América do Sul**
+### **<span style="color: #1478BE;">CONFIRMADOS</span>**
 
 ```{r}
 m <- 4
@@ -1101,7 +1205,7 @@ fig <- df_samerica %>%
 fig
 ```
 
-### **<span style="color:#0A780AE6">RECUPERADOS</span>** na **América do Sul**
+### **<span style="color:#0A780AE6">RECUPERADOS</span>**
 
 ```{r}
 fig <- df_samerica %>% 
@@ -1123,7 +1227,7 @@ fig <- df_samerica %>%
 fig
 ```
 
-### **<span style="color:#DC2828E6">MORTES</span>** na **América do Sul**
+### **<span style="color:#DC2828E6">MORTES</span>**
 
 ```{r}
 fig <- df_samerica %>% 
@@ -1151,6 +1255,10 @@ fig
 
 Compare 
 =====================================================================
+
+
+
+
 
 Column {data-width=500}
 -------------------------------------
@@ -1195,6 +1303,8 @@ fig1 <- plotly::layout(fig1,
                        hovermode = "compare")
 fig1
 ```
+
+
 
 
 Column {data-width=500}
@@ -1242,6 +1352,11 @@ fig2 <- plotly::layout(fig2,
                        hovermode = "compare")
 fig2
 ```
+
+
+
+
+
 Column {data-width=500}
 -------------------------------------
 ### **Situação atual dos casos**
@@ -1296,6 +1411,10 @@ fig
 Mapa
 =======================================================================
 
+
+
+
+
 ### **Mapa mundi**
 
 ```{r}
@@ -1345,11 +1464,11 @@ map_object %>%
 
 
 
+
 Mais
 =======================
 
 Para visualizações interativas acesse https://grequena.shinyapps.io/coronavirusBR
-
 
 
 
@@ -1367,15 +1486,19 @@ Sua construção foi feita no R através do R Markdown por meio do pacote [`flex
 Sua primeira versão é uma adaptação dessa [dashboard](https://ramikrispin.github.io/coronavirus_dashboard/){target="_blank"} por Rami Krispin.
 
 **Código**
+
 O código-fonte pode ser acessado no canto superior direito no botão `</> Source Code`.
 
 **Dados**
+
 Os bancos de dados utilizados são fornecidos pela Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE), mantidos neste [repositório](https://github.com/CSSEGISandData/COVID-19) do github.
 O portal oficial do Ministério da Saúde com os números de casos confirmados e óbitos no Brasil pode ser visto [aqui](https://covid.saude.gov.br/).
 
 **Contato**
+
 Para quaisquer dúvidas ou sugestões, você pode nos contatar através do e-mail requena@ufv.br.
 
 **Atualização**
+
 Última atualização:  `r as.character.POSIXt(Sys.time(), 
 format = "%d/%m/%Y")`.
