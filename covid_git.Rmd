@@ -535,7 +535,7 @@ Continentes {data-orientation=rows data-navmenu="Mundo" data-vertical_layout=fil
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-###
+### Observações por **continente** em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
 dfshow <- df_cont %>% 
@@ -553,9 +553,9 @@ dfshow <- df_cont %>%
     `%C` = Confirmados/sum(Confirmados),
     `%R` = Recuperados/sum(Recuperados),
     `%M` = Mortes/sum(Mortes),
-    con.pop = 100000*(Confirmados / pop),
-    rec.pop = 100000*(Recuperados / pop),
-    mor.pop = 100000*(Mortes / pop)
+    con.pop = 1000000*(Confirmados / pop),
+    rec.pop = 1000000*(Recuperados / pop),
+    mor.pop = 1000000*(Mortes / pop)
   ) %>% 
   dplyr::select("Continente", 
                 "Confirmados", "%C", 
@@ -604,21 +604,21 @@ sketch <- htmltools::withTags(
            ),
            format(
              round(
-               100000*(sum(df$confirmed)/
+               1000000*(sum(df$confirmed)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
              decimal.mark = ",", big.mark = "."
            ),
            format(
              round(
-               100000*(sum(df$recovered)/
+               1000000*(sum(df$recovered)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
              decimal.mark = ",", big.mark = "."
            ),
            format(
              round(
-               100000*(sum(df$death)/
+               1000000*(sum(df$death)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
             decimal.mark = ",", big.mark = "."
@@ -639,10 +639,9 @@ DT::datatable(dfshow,
               container = sketch
 )%>%
   DT::formatPercentage(c(3, 5, 6, 8, 9), 
-                       digits = 1, 
-                       dec.mark = ","
+                       digits = 1
   ) %>% 
-  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
+  DT::formatRound(c(11, 12, 13), digits = 1)
   
 ```
 
@@ -665,10 +664,10 @@ Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, d
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
+### Confirmados, recuperados e mortes em números absolutos
 
 ```{r}
-dfshow <- df_cont %>% 
+dfshow1 <- df_cont %>% 
   dplyr::group_by(continent) %>% 
   dplyr::summarise(confirmed = sum(confirmed), 
                    recovered = sum(recovered),
@@ -676,9 +675,9 @@ dfshow <- df_cont %>%
   tidyr::pivot_longer(cols = c(continent), values_to = "continent") %>% 
   dplyr::select(5, 1, 2, 3) %>% 
   dplyr::arrange(-confirmed)
-dfshow$continent <- factor(dfshow$continent, levels = dfshow$continent)
+dfshow1$continent <- factor(dfshow1$continent, levels = dfshow1$continent)
 
-plotly::plot_ly(data = dfshow, 
+plotly::plot_ly(data = dfshow1, 
                 x = ~ continent, 
                 y = ~ confirmed, 
                 type = "bar", 
@@ -777,6 +776,41 @@ fig
 
 
 
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### Confirmados, recuperados e mortes **considerando o tamanho da população**
+
+```{r}
+names(dfshow)[1] <- "continent"
+
+dfshow <- dfshow %>% 
+  dplyr::arrange(-`Conf.<br>em 100k`)
+dfshow$continent <- factor(dfshow$continent, levels = dfshow$continent)
+
+
+plotly::plot_ly(data = dfshow, 
+                x = ~ continent, 
+                y = ~ `Conf.<br>em 100k`, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ `Recup.<br>em 100k`, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ `Mortes<br>em 100k`, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Nº de casos em 100.000 habitantes"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+
 Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
 
@@ -787,7 +821,7 @@ Países mais afetados {data-orientation=rows data-navmenu="Mundo"}
 Row {data-height=550}
 --------------------------------------------------------------------------------
 
-### 
+### Observações por **país** em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
 dfshow <- df %>% 
@@ -837,11 +871,9 @@ DT::datatable(dfshow,
               escape = F
 )%>%
   DT::formatPercentage(c(3, 5, 6, 8, 9), 
-                       digits = 1, 
-                       dec.mark = ",", 
-                       mark = "."
+                       digits = 1
   ) %>% 
-  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
+  DT::formatRound(c(11, 12, 13), digits = 1)
 ```
 
 > Legenda: 
@@ -863,15 +895,15 @@ Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, d
 Row {data-height=300}
 --------------------------------------------------------------------------------
 
-### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
+### Confirmados, recuperados e mortes em números absolutos
 
 ```{r}
 m <- 20
-dfshow <- df
-dfshow$Country.Region <- factor(dfshow$Country.Region, 
-                                levels = dfshow$Country.Region)
+dfshow1 <- df
+dfshow1$Country.Region <- factor(dfshow1$Country.Region, 
+                                levels = dfshow1$Country.Region)
 
-plotly::plot_ly(data = dfshow[1:m, ], 
+plotly::plot_ly(data = dfshow1[1:m, ], 
                 x = ~ Country.Region, 
                 y = ~ confirmed, 
                 type = "bar", 
@@ -986,6 +1018,64 @@ fig
 
 
 
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### Confirmados, recuperados e mortes **considerando o tamanho da população**
+
+```{r}
+m <- 20
+dfshow <- df %>% 
+  dplyr::filter(Country.Region != "Holy See") %>% 
+  dplyr::group_by(Country.Region) %>% 
+  dplyr::mutate(pop = d.pop[match(Country.Region, d.pop$Country.Name), 2],
+                Confirmados = confirmed,
+                Recuperados = recovered,
+                Mortes = death) %>% 
+  dplyr::mutate(
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/sum(df$confirmed),
+    `%R` = Recuperados/sum(df$recovered),
+    `%M` = Mortes/sum(df$death),
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
+  ) %>% 
+  dplyr::select("Country.Region", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  ) %>% 
+  dplyr::arrange(-con.pop)
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = dfshow$Country.Region)
+
+
+plotly::plot_ly(data = dfshow[1:m, ], 
+                x = ~ Country.Region, 
+                y = ~ con.pop, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ rec.pop, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ mor.pop, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Nº de casos em 100.000 habitantes"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+
+
 América do Sul {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
 
@@ -996,7 +1086,7 @@ América do Sul {data-orientation=rows data-navmenu="Mundo"}
 Row {data-height=600}
 --------------------------------------------------------------------------------
 
-### 
+### Observações por **país na América do Sul** em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
 country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
@@ -1120,10 +1210,9 @@ DT::datatable(dfshow,
               container = sketch
 )%>%
   DT::formatPercentage(c(3, 5, 6, 8, 9), 
-                       digits = 1, 
-                       dec.mark = ","
+                       digits = 1
   ) %>% 
-  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
+  DT::formatRound(c(11, 12, 13), digits = 1)
 ```
 
 > Legenda: 
@@ -1146,7 +1235,7 @@ Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, d
 Row {data-height=300}
 -------------------------
 
-### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
+### Confirmados, recuperados e mortes em números absolutos
 
 ```{r}
 country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
@@ -1308,15 +1397,92 @@ fig
 
 
 
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### Confirmados, recuperados e mortes **considerando o tamanho da população**
+
+```{r}
+country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
+                                                       "Brazil", "Chile",
+                                                       "Colombia", "Ecuador",
+                                                       "Guyana", "Paraguay",
+                                                       "Peru", "Suriname",
+                                                       "Uruguay", "Venezuela")]
+
+totalSA <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa) %>%
+  dplyr::summarise(Confirmados = sum(confirmed),
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::select(2, 3, 4) %>% 
+  dplyr::summarise(con = sum(Confirmados),
+                   rec = sum(Recuperados),
+                   dea = sum(Mortes))
+
+dfshow <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa) %>%
+  dplyr::summarise(Confirmados = sum(confirmed),
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  dplyr::arrange(-Confirmados) %>% 
+  dplyr::group_by(Country.Region) %>% 
+  dplyr::mutate(pop = d.pop[match(Country.Region, d.pop$Country.Name), 2]) %>% 
+  dplyr::mutate(
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/totalSA$con,
+    `%R` = Recuperados/totalSA$rec,
+    `%M` = Mortes/totalSA$dea,
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
+  ) %>% 
+  dplyr::select("Country.Region", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  ) %>% 
+  dplyr::arrange(-con.pop)
+
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = dfshow$Country.Region)
+
+names(dfshow)[1] <- "País/Região"
+plotly::plot_ly(data = dfshow, 
+                x = ~ `País/Região`, 
+                y = ~ con.pop, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ rec.pop, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ mor.pop, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+
+
 Compare 
-=====================================================================
+================================================================================
 
 
 
 
 
 Column {data-width=500}
--------------------------------------
+--------------------------------------------------------------------------------
 
 ### **Evolução dos CONFIRMADOS desde `r as.character.POSIXt(min(coronavirus$date), format = "%d/%m/%Y")`**
 
