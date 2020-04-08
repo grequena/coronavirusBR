@@ -638,12 +638,6 @@ DT::datatable(dfshow,
               escape = F,
               container = sketch
 )%>%
-  DT::formatCurrency(c(2, 4, 7, 10), 
-                     currency = "", 
-                     interval = 3, 
-                     mark = ".", 
-                     digits = 0
-  ) %>% 
   DT::formatPercentage(c(3, 5, 6, 8, 9), 
                        digits = 1, 
                        dec.mark = ","
@@ -798,76 +792,70 @@ Row {data-height=550}
 ```{r}
 dfshow <- df %>% 
   dplyr::group_by(Country.Region) %>% 
+  dplyr::mutate(pop = d.pop[match(Country.Region, d.pop$Country.Name), 2],
+                Confirmados = confirmed,
+                Recuperados = recovered,
+                Mortes = death) %>% 
   dplyr::mutate(
-    `Taxa de<br>Recuperação` = 
-        paste0(
-          format(
-            round(100*recovered/confirmed, 1),
-            decimal.mark = ",", big.mark = "."
-          ),
-          "%"
-        ),
-    `Taxa de<br>Letalidade` = 
-      paste0(
-        format(
-          round(100*death/confirmed, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%C` = 
-      paste0(
-        format(
-          round(100*confirmed/sum(df$confirmed), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%R` = 
-      paste0(
-        format(
-          round(100*recovered/sum(df$recovered), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),      
-    `%M` = 
-      paste0(
-        format(
-          round(100*death/sum(df$death), 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ), 
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/sum(df$confirmed),
+    `%R` = Recuperados/sum(df$recovered),
+    `%M` = Mortes/sum(df$death),
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
   ) %>% 
-  dplyr::select(1, 2, 7, 4, 8, 5, 3, 9, 6)
+  dplyr::select("Country.Region", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  )
+
+names(dfshow)[1] <- " "
+names(dfshow)[2] <- "Conf."
+names(dfshow)[3] <- "% Conf."
+names(dfshow)[4] <- "Recup."
+names(dfshow)[5] <- "% Recup."
+names(dfshow)[7] <- "Mortes"
+names(dfshow)[8] <- "% Mortes"
+names(dfshow)[10] <- "Total<br>Populacional"
+names(dfshow)[11] <- "Conf.<br>em 100k"
+names(dfshow)[12] <- "Recup.<br>em 100k"
+names(dfshow)[13] <- "Mortes<br>em 100k"
 # dfshow$Country.Region <- factor(dfshow$Country.Region, 
 #                                 levels = dfshow$Country.Region)
-
-names(dfshow)[1] <- "País/Região"
-names(dfshow)[2] <- "Confirmados"
-names(dfshow)[4] <- "Recuperados"
-names(dfshow)[7] <- "Mortes"
 
 DT::datatable(dfshow, 
               options = list(
                 columnDefs = list(list(className = 'dt-center', 
                                        targets = "_all")),
-                lengthChange = FALSE),
-              escape = F)
-# DT::formatStyle("País/Região", target = "row",
-#                 backgroundColor = DT::styleEqual(
-#                   dfshow$`País/Região`[1:m],
-#                   viridis::viridis(7, option = "A", alpha = .4)))
+                lengthChange = FALSE,
+                order = list(list(2, 'desc'))
+              ),
+              escape = F
+)%>%
+  DT::formatPercentage(c(3, 5, 6, 8, 9), 
+                       digits = 1, 
+                       dec.mark = ",", 
+                       mark = "."
+  ) %>% 
+  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$
-%M $= \frac{Mortes}{Total(Mortes)}$ e 
-Taxa de Letalidade $= \frac{Mortes}{Confirmados}$.
-
+Conf. = Confirmados,
+% Conf. $= \frac{Confirmados}{Total(Confirmados)}$, 
+Recup. = Recuperados,
+% Recup. $= \frac{Recuperados}{Total(Recuperados)}$, 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
+% Mortes $= \frac{Mortes}{Total(Mortes)}$,
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$,
+Conf. em 100k = $100.000\frac{Confirmados}{Total Populacional}$,
+Recup. em 100k = $100.000\frac{Recuperados}{Total Populacional}$ e
+Mortes em 100k = $100.000\frac{Mortes}{Total Populacional}$. <br>
+Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, dos quais "Recup. em 100k" se recuperaram e "Mortes em 100k" foram a óbito. Por exemplo, nos EUA, `r round(dfshow[,11][dfshow[,1]=="US"], 1)` a cada 100.000 foram confirmados, dos quais `r round(dfshow[,12][dfshow[,1]=="US"], 1)` se recuperaram e `r round(dfshow[,13][dfshow[,1]=="US"], 1)` morreram.
 
 
 
@@ -1036,53 +1024,37 @@ dfshow <- df_pais %>%
                    Mortes = sum(death)) %>% 
   dplyr::arrange(-Confirmados) %>% 
   dplyr::group_by(Country.Region) %>% 
+  dplyr::mutate(pop = d.pop[match(Country.Region, d.pop$Country.Name), 2]) %>% 
   dplyr::mutate(
-    `Taxa de<br>Recuperação` = 
-        paste0(
-          format(
-            round(100*Recuperados/Confirmados, 1),
-            decimal.mark = ",", big.mark = "."
-          ),
-          "%"
-        ),
-    `Taxa de<br>Letalidade` = 
-      paste0(
-        format(
-          round(100*Mortes/Confirmados, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%C` = 
-      paste0(
-        format(
-          round(100*Confirmados/totalSA$con, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),
-    `%R` = 
-      paste0(
-        format(
-          round(100*Recuperados/totalSA$rec, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ),      
-    `%M` = 
-      paste0(
-        format(
-          round(100*Mortes/totalSA$dea, 1),
-          decimal.mark = ",", big.mark = "."
-        ),
-        "%"
-      ), 
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/totalSA$con,
+    `%R` = Recuperados/totalSA$rec,
+    `%M` = Mortes/totalSA$dea,
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
   ) %>% 
-  dplyr::select(1, 2, 7, 3, 8, 5, 4, 9, 6)
-
+  dplyr::select("Country.Region", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  )
 dfshow$Country.Region <- factor(dfshow$Country.Region, 
                                 levels = as.character(country_sa))
-names(dfshow)[1] <- "País/Região"
+
+names(dfshow)[1] <- " "
+names(dfshow)[2] <- "Conf."
+names(dfshow)[3] <- "% Conf."
+names(dfshow)[4] <- "Recup."
+names(dfshow)[5] <- "% Recup."
+names(dfshow)[7] <- "Mortes"
+names(dfshow)[8] <- "% Mortes"
+names(dfshow)[10] <- "Total<br>Populacional"
+names(dfshow)[11] <- "Conf.<br>em 100k"
+names(dfshow)[12] <- "Recup.<br>em 100k"
+names(dfshow)[13] <- "Mortes<br>em 100k"
 
 sketch <- htmltools::withTags(
   table(
@@ -1090,44 +1062,82 @@ sketch <- htmltools::withTags(
                     escape = F),# escape = F for html code
     DT::tableFooter(
       list("", "Total", # " " for rownames=T works properly
-           totalSA$con, "100%",
-           totalSA$rec, "100%",
+           format(totalSA$con, big.mark = ".", decimal.mark = ","), 
+           "100%", 
+           format(totalSA$rec, big.mark = ".", decimal.mark = ","), 
+           "100%",
            paste0(
              format(
                round(100*totalSA$rec/totalSA$con, 1), 
-               decimal.mark = ","),
+               decimal.mark = ",", big.mark = "."),
              "%"),
-           totalSA$dea, "100%",
+           format(totalSA$dea, big.mark = ".", decimal.mark = ","), 
+           "100%",
            paste0(
              format(
                round(100*totalSA$dea/totalSA$con, 1), 
-               decimal.mark = ","),
-             "%")
+               decimal.mark = ",", big.mark = "."),
+             "%"),
+           format(
+             sum(d.pop$pop2018[d.pop$Country.Name %in% country_sa]), 
+            big.mark = ".", decimal.mark = ","
+           ),
+           format(
+             round(
+               100000*(totalSA$con/
+                         sum(d.pop$pop2018[d.pop$Country.Name%in%country_sa])),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(totalSA$rec/
+                         sum(d.pop$pop2018[d.pop$Country.Name%in%country_sa])),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(totalSA$dea/
+                         sum(d.pop$pop2018[d.pop$Country.Name%in%country_sa])),
+               1),
+            decimal.mark = ",", big.mark = "."
+           )
       )
     )
   )
 )
 
-DT::datatable(dfshow, rownames = T,
+DT::datatable(dfshow, 
               options = list(
-                dom = 't',
-                columnDefs = list(
-                  list(className = "dt-center", targets = "_all")),
-                pageLength = 12),
-              container = sketch,
-              escape = F)
-  # DT::formatStyle("País/Região", target = "row",
-  #                 backgroundColor = DT::styleEqual(
-  #                   rev(dfshow$`País/Região`[1:m]),
-  #                   viridis::viridis(4, option = "E", alpha = .4)))
+                dom = "t",
+                columnDefs = list(list(className = 'dt-center', 
+                                       targets = "_all")),
+                lengthChange = FALSE,
+                pageLength = length(country_sa)
+              ),
+              escape = F,
+              container = sketch
+)%>%
+  DT::formatPercentage(c(3, 5, 6, 8, 9), 
+                       digits = 1, 
+                       dec.mark = ","
+  ) %>% 
+  DT::formatRound(c(11, 12, 13), digits = 1, dec.mark = ",", mark = ".")
 ```
 
 > Legenda: 
-%C $= \frac{Confirmados}{Total(Confirmados)}$, 
-%R $= \frac{Recuperados}{Total(Recuperados)}$, 
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$
-%M $= \frac{Mortes}{Total(Mortes)}$ e 
-Taxa de Letalidade $= \frac{Mortes}{Confirmados}$.
+Conf. = Confirmados,
+% Conf. $= \frac{Confirmados}{Total(Confirmados)}$, 
+Recup. = Recuperados,
+% Recup. $= \frac{Recuperados}{Total(Recuperados)}$, 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
+% Mortes $= \frac{Mortes}{Total(Mortes)}$,
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$,
+Conf. em 100k = $100.000\frac{Confirmados}{Total Populacional}$,
+Recup. em 100k = $100.000\frac{Recuperados}{Total Populacional}$ e
+Mortes em 100k = $100.000\frac{Mortes}{Total Populacional}$. <br>
+Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, dos quais "Recup. em 100k" se recuperaram e "Mortes em 100k" foram a óbito. Por exemplo, no Brasil, `r round(dfshow[,11][dfshow[,1]=="Brazil"], 1)` a cada 100.000 foram confirmados, dos quais `r round(dfshow[,12][dfshow[,1]=="Brazil"], 1)` se recuperaram e `r round(dfshow[,13][dfshow[,1]=="Brazil"], 1)` morreram.
 
 
 
@@ -1139,6 +1149,51 @@ Row {data-height=300}
 ### Confirmados, recuperados e mortes em `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
 
 ```{r}
+country_sa <- df$Country.Region[df$Country.Region%in%c("Argentina", "Bolivia",
+                                                       "Brazil", "Chile",
+                                                       "Colombia", "Ecuador",
+                                                       "Guyana", "Paraguay",
+                                                       "Peru", "Suriname",
+                                                       "Uruguay", "Venezuela")]
+
+totalSA <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa) %>%
+  dplyr::summarise(Confirmados = sum(confirmed),
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::select(2, 3, 4) %>% 
+  dplyr::summarise(con = sum(Confirmados),
+                   rec = sum(Recuperados),
+                   dea = sum(Mortes))
+
+dfshow <- df_pais %>% 
+  dplyr::filter(Country.Region %in% country_sa) %>%
+  dplyr::summarise(Confirmados = sum(confirmed),
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  dplyr::arrange(-Confirmados) %>% 
+  dplyr::group_by(Country.Region) %>% 
+  dplyr::mutate(pop = d.pop[match(Country.Region, d.pop$Country.Name), 2]) %>% 
+  dplyr::mutate(
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/totalSA$con,
+    `%R` = Recuperados/totalSA$rec,
+    `%M` = Mortes/totalSA$dea,
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
+  ) %>% 
+  dplyr::select("Country.Region", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  )
+dfshow$Country.Region <- factor(dfshow$Country.Region, 
+                                levels = as.character(country_sa))
+names(dfshow)[1] <- "País/Região"
 plotly::plot_ly(data = dfshow, 
                 x = ~ `País/Região`, 
                 y = ~ Confirmados, 
