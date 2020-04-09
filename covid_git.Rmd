@@ -1597,10 +1597,16 @@ Row {data-height=350}
 
 ```{r}
 m <- 5
-dfshow <- dfshow %>% 
-  dplyr::arrange(-Conf.)
+
+data.maxmin <- d.estado %>% 
+  dplyr::group_by(state) %>% 
+  dplyr::filter(date == max(date)) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::select(date) 
+data.minmax <- min(data.maxmin$date)
 
 dfshow1 <- d.estado %>% 
+  dplyr::filter(date <= data.minmax) %>% 
   dplyr::filter(state %in% dfshow$state[1:m])%>% 
   dplyr::arrange(date)
 
