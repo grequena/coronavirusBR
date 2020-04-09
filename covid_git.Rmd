@@ -560,9 +560,9 @@ dfshow <- df_cont %>%
     `%C` = Confirmados/sum(Confirmados),
     `%R` = Recuperados/sum(Recuperados),
     `%M` = Mortes/sum(Mortes),
-    con.pop = 1000000*(Confirmados / pop),
-    rec.pop = 1000000*(Recuperados / pop),
-    mor.pop = 1000000*(Mortes / pop)
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
   ) %>% 
   dplyr::select("Continente", 
                 "Confirmados", "%C", 
@@ -611,21 +611,21 @@ sketch <- htmltools::withTags(
            ),
            format(
              round(
-               1000000*(sum(df$confirmed)/
+               100000*(sum(df$confirmed)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
              decimal.mark = ",", big.mark = "."
            ),
            format(
              round(
-               1000000*(sum(df$recovered)/
+               100000*(sum(df$recovered)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
              decimal.mark = ",", big.mark = "."
            ),
            format(
              round(
-               1000000*(sum(df$death)/
+               100000*(sum(df$death)/
                          d.pop$pop2018[d.pop$Country.Name=="World"]),
                1),
             decimal.mark = ",", big.mark = "."
@@ -1247,7 +1247,7 @@ Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, d
 
 
 Row {data-height=300}
--------------------------
+--------------------------------------------------------------------------------
 
 ### Em valores absolutos
 
@@ -1321,7 +1321,7 @@ plotly::plot_ly(data = dfshow,
 
 
 Row {data-height=350}
--------------------------
+--------------------------------------------------------------------------------
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span>** em valores absolutos
 
@@ -1561,7 +1561,7 @@ Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, d
 
 
 Row {data-height=300}
--------------------------
+--------------------------------------------------------------------------------
 
 ### Em valores absolutos
 
@@ -1591,7 +1591,7 @@ plotly::plot_ly(data = dfshow,
 
 
 Row {data-height=350}
--------------------------
+--------------------------------------------------------------------------------
 
 ### **<span style="color: #1478BE;">CONFIRMADOS</span>** em valores absolutos
 
