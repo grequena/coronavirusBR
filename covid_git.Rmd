@@ -248,14 +248,6 @@ df_cont <- df_cont %>%
                 recovered_cum = cumsum(recovered)) %>% 
   dplyr::ungroup()
 df_cont$continent <- df_cont$Country.Region #create the variable continent
-#_____________________________________________________________________Por estado
-# brasil.io
-# df_munic <- read.csv(url("https://brasil.io/dataset/covid19/caso?format=csv"))
-# df_estado <- df_munic %>% 
-#   dplyr::group_by(state, date) %>% 
-#   dplyr::summarise(confirmed = sum(confirmed, na.rm = T),
-#                 death = sum(deaths, na.rm = T)) %>% 
-#   dplyr::arrange(date)
 ```
 
 
@@ -529,297 +521,6 @@ plotly::plot_ly(data = df_daily,
 
 
 
-Continentes <!--- ----------------------------------------------------------------------------------------------------------------------------------------- ---> {data-orientation=rows data-navmenu="Mundo"}
-================================================================================
-
-
-
-
-
-<!-- Two tabs {.tabset} -->
-<!-- ------------------ -->
-
-Row {data-height=300}
---------------------------------------------------------------------------------
-
-### Observações por **continente** até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
-
-```{r}
-dfshow <- df_cont %>% 
-  dplyr::group_by(continent) %>% 
-  dplyr::summarise(Confirmados = sum(confirmed), 
-                   Recuperados = sum(recovered),
-                   Mortes = sum(death)) %>% 
-  tidyr::pivot_longer(cols = c(continent), values_to = "Continente") %>% 
-  dplyr::select(5, 1, 2, 3) %>% 
-  dplyr::arrange(-Confirmados) %>% 
-  dplyr::mutate(pop = d.pop[match(Continente, d.pop$Country.Name), 2]) %>% 
-  dplyr::mutate(
-    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
-    `Taxa de<br>Letalidade` = Mortes/Confirmados,
-    `%C` = Confirmados/sum(Confirmados),
-    `%R` = Recuperados/sum(Recuperados),
-    `%M` = Mortes/sum(Mortes),
-    con.pop = 100000*(Confirmados / pop),
-    rec.pop = 100000*(Recuperados / pop),
-    mor.pop = 100000*(Mortes / pop)
-  ) %>% 
-  dplyr::select("Continente", 
-                "Confirmados", "%C", 
-                "Recuperados", "%R", "Taxa de<br>Recuperação",
-                "Mortes", "%M", "Taxa de<br>Letalidade",
-                "pop", "con.pop", "rec.pop", "mor.pop"
-  )
-
-names(dfshow)[1] <- ""
-names(dfshow)[2] <- "Conf."
-names(dfshow)[3] <- "% Conf."
-names(dfshow)[4] <- "Recup."
-names(dfshow)[5] <- "% Recup."
-names(dfshow)[7] <- "Mortes"
-names(dfshow)[8] <- "% Mortes"
-names(dfshow)[10] <- "Total<br>Populacional"
-names(dfshow)[11] <- "Conf.<br>em 100k"
-names(dfshow)[12] <- "Recup.<br>em 100k"
-names(dfshow)[13] <- "Mortes<br>em 100k"
-
-sketch <- htmltools::withTags(
-  table(
-    DT::tableHeader(c(" ",colnames(dfshow)),# " " for rownames=T works properly
-                    escape = F),# escape = F for html code
-    DT::tableFooter(
-      list("", "Total", # " " for rownames=T works properly
-           format(sum(df$confirmed), big.mark = ".", decimal.mark = ","), 
-           "100%", 
-           format(sum(df$recovered), big.mark = ".", decimal.mark = ","), 
-           "100%",
-           paste0(
-             format(
-               round(100*sum(df$recovered)/sum(df$confirmed), 1), 
-               decimal.mark = ",", big.mark = "."),
-             "%"),
-           format(sum(df$death), big.mark = ".", decimal.mark = ","), 
-           "100%",
-           paste0(
-             format(
-               round(100*sum(df$death)/sum(df$confirmed), 1), 
-               decimal.mark = ",", big.mark = ","),
-             "%"),
-           format(
-             d.pop$pop2018[d.pop$Country.Name=="World"], 
-            big.mark = ".", decimal.mark = ","
-           ),
-           format(
-             round(
-               100000*(sum(df$confirmed)/
-                         d.pop$pop2018[d.pop$Country.Name=="World"]),
-               1),
-             decimal.mark = ",", big.mark = "."
-           ),
-           format(
-             round(
-               100000*(sum(df$recovered)/
-                         d.pop$pop2018[d.pop$Country.Name=="World"]),
-               1),
-             decimal.mark = ",", big.mark = "."
-           ),
-           format(
-             round(
-               100000*(sum(df$death)/
-                         d.pop$pop2018[d.pop$Country.Name=="World"]),
-               1),
-            decimal.mark = ",", big.mark = "."
-           )
-      )
-    )
-  )
-)
-
-DT::datatable(dfshow, 
-              options = list(
-                dom = "t",
-                columnDefs = list(list(className = 'dt-center', 
-                                       targets = "_all")),
-                lengthChange = FALSE
-              ),
-              escape = F,
-              container = sketch
-)%>%
-  DT::formatPercentage(c(3, 5, 6, 8, 9), 
-                       digits = 1
-  ) %>% 
-  DT::formatRound(c(11, 12, 13), digits = 1)
-  
-```
-
-> Legenda: 
-Conf. = Confirmados,
-% Conf. $= \frac{Confirmados}{Total(Confirmados)}$, 
-Recup. = Recuperados,
-% Recup. $= \frac{Recuperados}{Total(Recuperados)}$, 
-Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
-% Mortes $= \frac{Mortes}{Total(Mortes)}$,
-Taxa de Letalidade $= \frac{Mortes}{Confirmados}$,
-Conf. em 100k = $100.000\frac{Confirmados}{Total Populacional}$,
-Recup. em 100k = $100.000\frac{Recuperados}{Total Populacional}$ e
-Mortes em 100k = $100.000\frac{Mortes}{Total Populacional}$. <br>
-Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, dos quais "Recup. em 100k" se recuperaram e "Mortes em 100k" foram a óbito. Por exemplo, na Europa, `r round(dfshow[,11][dfshow[,1]=="Europe"], 1)` a cada 100.000 foram confirmados, dos quais `r round(dfshow[,12][dfshow[,1]=="Europe"], 1)` se recuperaram e `r round(dfshow[,13][dfshow[,1]=="Europe"], 1)` morreram.
-
-
-
-
-
-Row {data-height=300}
---------------------------------------------------------------------------------
-
-### Em valores absolutos
-
-```{r}
-dfshow1 <- df_cont %>% 
-  dplyr::group_by(continent) %>% 
-  dplyr::summarise(confirmed = sum(confirmed), 
-                   recovered = sum(recovered),
-                   death = sum(death)) %>% 
-  tidyr::pivot_longer(cols = c(continent), values_to = "continent") %>% 
-  dplyr::select(5, 1, 2, 3) %>% 
-  dplyr::arrange(-confirmed)
-dfshow1$continent <- factor(dfshow1$continent, levels = dfshow1$continent)
-
-plotly::plot_ly(data = dfshow1, 
-                x = ~ continent, 
-                y = ~ confirmed, 
-                type = "bar", 
-                name = "Confirmados",
-                marker = list(color = confirmed_colorT)) %>%
-  plotly::add_trace(y = ~ recovered, 
-                    name = "Recuperados",
-                    marker = list(color = recovered_colorT)) %>%
-  plotly::add_trace(y = ~ death, 
-                    name = "Mortes",
-                    marker = list(color = death_colorT)) %>%
-  plotly::layout(barmode = 'group',
-                 yaxis = list(title = "Número de casos"),
-                 xaxis = list(title = ""),
-                 legend = list(x = 0.8, y = 0.9),
-                 hovermode = "compare")
-```
-
-
-
-
-
-Row {data-height=350}
---------------------------------------------------------------------------------
-
-### **<span style="color: #1478BE;">CONFIRMADOS</span>** em valores absolutos
-
-```{r}
-df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
-                                                          "Americas", "Europe",
-                                                          "Asia"))
-total <- df_cont %>% 
-  dplyr::group_by(continent) %>% 
-  dplyr::summarise(con=sum(confirmed),
-                   rec=sum(recovered),
-                   dea=sum(death))
-maxdate <- max(df_cont$date)
-fig <- df_cont %>% 
-  ggplot2::ggplot(ggplot2::aes(x = date, y = confirmed_cum, fill = continent)) +
-  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
-  ggplot2::ylab("Frequência acumulada")+
-  ggplot2::xlab("")+
-  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
-  ggplot2::theme_bw(base_size=20)+
-  ggplot2::theme(panel.border     = ggplot2::element_blank(),
-                 panel.background = ggplot2::element_blank(),
-                 legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=12),
-                 axis.title       = ggplot2::element_text(size=15))
-fig
-
-
-```
-
-### **<span style="color:#0A780AE6">RECUPERADOS</span>** em valores absolutos
-
-```{r}
-fig <- df_cont %>% 
-  ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent,
-                               tooltip = recovered_cum)) +
-  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
-  ggplot2::ylab("")+
-  ggplot2::xlab("")+
-  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
-  ggplot2::theme_bw(base_size=20)+
-  ggplot2::theme(panel.border     = ggplot2::element_blank(),
-                 panel.background = ggplot2::element_blank(),
-                 legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=12),
-                 axis.title       = ggplot2::element_text(size=15))
-fig
-```
-
-### **<span style="color:#DC2828E6">MORTES</span>** em valores absolutos
-
-```{r}
-fig <- df_cont %>% 
-  ggplot2::ggplot(ggplot2::aes(x = date, y = death_cum, fill = continent)) +
-  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
-  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
-  ggplot2::ylab("")+
-  ggplot2::xlab("")+
-  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
-  ggplot2::theme_bw(base_size=20)+
-  ggplot2::theme(panel.border     = ggplot2::element_blank(),
-                 panel.background = ggplot2::element_blank(),
-                 legend.position  = c(0.2, 0.65),
-                 axis.text        = ggplot2::element_text(size=12),
-                 axis.title       = ggplot2::element_text(size=15))
-fig
-```
-
-
-
-
-
-Row {data-height=300}
---------------------------------------------------------------------------------
-
-### **Considerando o tamanho da população**
-
-```{r}
-names(dfshow)[1] <- "continent"
-
-dfshow <- dfshow %>% 
-  dplyr::arrange(-`Conf.<br>em 100k`)
-dfshow$continent <- factor(dfshow$continent, levels = dfshow$continent)
-
-
-plotly::plot_ly(data = dfshow, 
-                x = ~ continent, 
-                y = ~ `Conf.<br>em 100k`, 
-                type = "bar", 
-                name = "Confirmados",
-                marker = list(color = confirmed_colorT)) %>%
-  plotly::add_trace(y = ~ `Recup.<br>em 100k`, 
-                    name = "Recuperados",
-                    marker = list(color = recovered_colorT)) %>%
-  plotly::add_trace(y = ~ `Mortes<br>em 100k`, 
-                    name = "Mortes",
-                    marker = list(color = death_colorT)) %>%
-  plotly::layout(barmode = 'group',
-                 yaxis = list(title = "Nº de casos em 100.000 habitantes"),
-                 xaxis = list(title = ""),
-                 legend = list(x = 0.8, y = 0.9),
-                 hovermode = "compare")
-```
-
-
-
-
-
 Países mais afetados <!--- ----------------------------------------------------------------------------------------------------------------------------------------------------------- ---> {data-orientation=rows data-navmenu="Mundo"}
 ================================================================================
 
@@ -1024,6 +725,118 @@ fig <- df_mpaises %>%
 fig
 ```
 
+
+
+
+
+Row {data-height=400}
+--------------------------------------------------------------------------------
+
+### **Evolução dos CONFIRMADOS desde `r as.character.POSIXt(min(coronavirus$date), format = "%d/%m/%Y")`**
+
+```{r}
+m <- 15
+country <- c(as.character(df$Country.Region[1:m]))
+set.seed(2009)
+cores <- sample(c(RColorBrewer::brewer.pal(8, "Dark2"),
+           RColorBrewer::brewer.pal(9, "Set1")))
+           
+fig1 <- plotly::plot_ly()
+for(i in 1:m) {
+  aux.df <- df_pais %>%
+    dplyr::filter(Country.Region == country[i])
+  fig1 <- plotly::add_trace(fig1,
+                            data = aux.df,
+                            x = ~date,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines",
+                            name = country[i],
+                            showlegend = T,
+                            visible = ifelse((i<=6 |
+                                                country[i]=="Brazil"|
+                                                country[i]=="China"),
+                                             T, "legendonly"),
+                            line = list(width = 1.25,
+                                        color = cores[i]))
+} 
+fig1 <- plotly::layout(fig1,
+                       title = "",
+                       yaxis = list(title = "Frequência acumulada"),
+                       xaxis = list(title = "",
+                                    range = c(min())),
+                       legend = list(x=1, y=1),
+                       hovermode = "comare")
+fig1
+```
+
+### **Evolução desde o dia do 500º CONFIRMADO **
+
+```{r}
+m <- 11
+
+day.d <- 500
+df_pais_500 <- df_pais %>%
+  dplyr::group_by(Country.Region) %>%
+  dplyr::filter(date >= min(lubridate::ymd(date[confirmed_cum>=day.d]))) %>%
+  dplyr::mutate(dia=1:sum(date>=min(lubridate::ymd(date[confirmed_cum>=day.d]))))
+
+fig2 <- plotly::plot_ly()
+for(i in 1:m) {
+  aux.df <- df_pais_500 %>%
+    dplyr::filter(Country.Region == country[i])
+  fig2 <- plotly::add_trace(fig2,
+                            data = aux.df,
+                            x = ~dia,
+                            y = ~confirmed_cum,
+                            type = "scatter",
+                            mode = "lines",
+                            name = country[i],
+                            showlegend = F,
+                            hoverinfo="none",
+                            line = list(width = 1,
+                                        color = cores[i])) %>% 
+    plotly::add_text(x = max(aux.df$dia),
+                     y = aux.df$confirmed_cum[
+                       aux.df$dia == max(aux.df$dia)],
+                     text = ifelse(country[i] == "United Kingdom",
+                                          "UK", country[i]),
+                     showlegend = F,
+                     textposition = ifelse(
+                       country[i]=="France", "middle left", 
+                       ifelse(
+                         country[i]%in%c("Germany", "Belgium"), "top right",
+                         "outside"))
+    )
+}
+aux.df <- df_pais_500 %>%
+  dplyr::filter(Country.Region == "Brazil")
+fig2 <- plotly::add_trace(fig2,
+                          data = aux.df,
+                          x = ~dia,
+                          y = ~confirmed_cum,
+                          type = "scatter",
+                          mode = "lines",
+                          name = "Brazil",
+                          showlegend = F,
+                          hoverinfo="none",
+                          line = list(width = 1,
+                                      color = cores[i])) %>% 
+  plotly::add_text(x = max(aux.df$dia),
+                   y = aux.df$confirmed_cum[aux.df$dia == max(aux.df$dia)],
+                   text = "Brazil",
+                   showlegend = F,
+                   textposition = "right")
+fig2 <- plotly::layout(fig2,
+                       title = "",
+                       yaxis = list(title =
+                                      "Frequência acumulada"),
+                       xaxis = list(title = "Dia após o 500º caso CONFIRMADO"),
+                       legend = list(x=0.1, y=0.9),
+                       uniformtext=list(minsize=6, mode='hide'),
+                       hovermode = "x")
+fig2
+```
 
 
 
@@ -1475,6 +1288,297 @@ plotly::plot_ly(data = dfshow,
                     name = "Recuperados",
                     marker = list(color = recovered_colorT)) %>%
   plotly::add_trace(y = ~ mor.pop, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Nº de casos em 100.000 habitantes"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+
+
+Continentes <!--- ----------------------------------------------------------------------------------------------------------------------------------------- ---> {data-orientation=rows data-navmenu="Mundo"}
+================================================================================
+
+
+
+
+
+<!-- Two tabs {.tabset} -->
+<!-- ------------------ -->
+
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### Observações por **continente** até `r as.character.POSIXt(max(coronavirus$date), format = "%d/%m/%Y")`
+
+```{r}
+dfshow <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(Confirmados = sum(confirmed), 
+                   Recuperados = sum(recovered),
+                   Mortes = sum(death)) %>% 
+  tidyr::pivot_longer(cols = c(continent), values_to = "Continente") %>% 
+  dplyr::select(5, 1, 2, 3) %>% 
+  dplyr::arrange(-Confirmados) %>% 
+  dplyr::mutate(pop = d.pop[match(Continente, d.pop$Country.Name), 2]) %>% 
+  dplyr::mutate(
+    `Taxa de<br>Recuperação` = Recuperados/Confirmados,
+    `Taxa de<br>Letalidade` = Mortes/Confirmados,
+    `%C` = Confirmados/sum(Confirmados),
+    `%R` = Recuperados/sum(Recuperados),
+    `%M` = Mortes/sum(Mortes),
+    con.pop = 100000*(Confirmados / pop),
+    rec.pop = 100000*(Recuperados / pop),
+    mor.pop = 100000*(Mortes / pop)
+  ) %>% 
+  dplyr::select("Continente", 
+                "Confirmados", "%C", 
+                "Recuperados", "%R", "Taxa de<br>Recuperação",
+                "Mortes", "%M", "Taxa de<br>Letalidade",
+                "pop", "con.pop", "rec.pop", "mor.pop"
+  )
+
+names(dfshow)[1] <- ""
+names(dfshow)[2] <- "Conf."
+names(dfshow)[3] <- "% Conf."
+names(dfshow)[4] <- "Recup."
+names(dfshow)[5] <- "% Recup."
+names(dfshow)[7] <- "Mortes"
+names(dfshow)[8] <- "% Mortes"
+names(dfshow)[10] <- "Total<br>Populacional"
+names(dfshow)[11] <- "Conf.<br>em 100k"
+names(dfshow)[12] <- "Recup.<br>em 100k"
+names(dfshow)[13] <- "Mortes<br>em 100k"
+
+sketch <- htmltools::withTags(
+  table(
+    DT::tableHeader(c(" ",colnames(dfshow)),# " " for rownames=T works properly
+                    escape = F),# escape = F for html code
+    DT::tableFooter(
+      list("", "Total", # " " for rownames=T works properly
+           format(sum(df$confirmed), big.mark = ".", decimal.mark = ","), 
+           "100%", 
+           format(sum(df$recovered), big.mark = ".", decimal.mark = ","), 
+           "100%",
+           paste0(
+             format(
+               round(100*sum(df$recovered)/sum(df$confirmed), 1), 
+               decimal.mark = ",", big.mark = "."),
+             "%"),
+           format(sum(df$death), big.mark = ".", decimal.mark = ","), 
+           "100%",
+           paste0(
+             format(
+               round(100*sum(df$death)/sum(df$confirmed), 1), 
+               decimal.mark = ",", big.mark = ","),
+             "%"),
+           format(
+             d.pop$pop2018[d.pop$Country.Name=="World"], 
+            big.mark = ".", decimal.mark = ","
+           ),
+           format(
+             round(
+               100000*(sum(df$confirmed)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(sum(df$recovered)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+             decimal.mark = ",", big.mark = "."
+           ),
+           format(
+             round(
+               100000*(sum(df$death)/
+                         d.pop$pop2018[d.pop$Country.Name=="World"]),
+               1),
+            decimal.mark = ",", big.mark = "."
+           )
+      )
+    )
+  )
+)
+
+DT::datatable(dfshow, 
+              options = list(
+                dom = "t",
+                columnDefs = list(list(className = 'dt-center', 
+                                       targets = "_all")),
+                lengthChange = FALSE
+              ),
+              escape = F,
+              container = sketch
+)%>%
+  DT::formatPercentage(c(3, 5, 6, 8, 9), 
+                       digits = 1
+  ) %>% 
+  DT::formatRound(c(11, 12, 13), digits = 1)
+  
+```
+
+> Legenda: 
+Conf. = Confirmados,
+% Conf. $= \frac{Confirmados}{Total(Confirmados)}$, 
+Recup. = Recuperados,
+% Recup. $= \frac{Recuperados}{Total(Recuperados)}$, 
+Taxa de recuperação $= \frac{Recuperados}{Confirmados}$,
+% Mortes $= \frac{Mortes}{Total(Mortes)}$,
+Taxa de Letalidade $= \frac{Mortes}{Confirmados}$,
+Conf. em 100k = $100.000\frac{Confirmados}{Total Populacional}$,
+Recup. em 100k = $100.000\frac{Recuperados}{Total Populacional}$ e
+Mortes em 100k = $100.000\frac{Mortes}{Total Populacional}$. <br>
+Obs.: "Conf. em 100k" é o número de casos confirmados em 100.000 habitantes, dos quais "Recup. em 100k" se recuperaram e "Mortes em 100k" foram a óbito. Por exemplo, na Europa, `r round(dfshow[,11][dfshow[,1]=="Europe"], 1)` a cada 100.000 foram confirmados, dos quais `r round(dfshow[,12][dfshow[,1]=="Europe"], 1)` se recuperaram e `r round(dfshow[,13][dfshow[,1]=="Europe"], 1)` morreram.
+
+
+
+
+
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### Em valores absolutos
+
+```{r}
+dfshow1 <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(confirmed = sum(confirmed), 
+                   recovered = sum(recovered),
+                   death = sum(death)) %>% 
+  tidyr::pivot_longer(cols = c(continent), values_to = "continent") %>% 
+  dplyr::select(5, 1, 2, 3) %>% 
+  dplyr::arrange(-confirmed)
+dfshow1$continent <- factor(dfshow1$continent, levels = dfshow1$continent)
+
+plotly::plot_ly(data = dfshow1, 
+                x = ~ continent, 
+                y = ~ confirmed, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ recovered, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ death, 
+                    name = "Mortes",
+                    marker = list(color = death_colorT)) %>%
+  plotly::layout(barmode = 'group',
+                 yaxis = list(title = "Número de casos"),
+                 xaxis = list(title = ""),
+                 legend = list(x = 0.8, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+
+
+Row {data-height=350}
+--------------------------------------------------------------------------------
+
+### **<span style="color: #1478BE;">CONFIRMADOS</span>** em valores absolutos
+
+```{r}
+df_cont$continent <- factor(df_cont$continent, levels = c("Oceania", "Africa",
+                                                          "Americas", "Europe",
+                                                          "Asia"))
+total <- df_cont %>% 
+  dplyr::group_by(continent) %>% 
+  dplyr::summarise(con=sum(confirmed),
+                   rec=sum(recovered),
+                   dea=sum(death))
+maxdate <- max(df_cont$date)
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = confirmed_cum, fill = continent)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
+  ggplot2::ylab("Frequência acumulada")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+fig
+
+
+```
+
+### **<span style="color:#0A780AE6">RECUPERADOS</span>** em valores absolutos
+
+```{r}
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = recovered_cum, fill = continent,
+                               tooltip = recovered_cum)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
+  ggplot2::ylab("")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+fig
+```
+
+### **<span style="color:#DC2828E6">MORTES</span>** em valores absolutos
+
+```{r}
+fig <- df_cont %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = death_cum, fill = continent)) +
+  ggplot2::geom_area(alpha=0.7 , size=.7, colour="black") +
+  viridis::scale_fill_viridis(discrete = T, name = " ", option = "D") +
+  ggplot2::ylab("")+
+  ggplot2::xlab("")+
+  ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = F))+
+  ggplot2::theme_bw(base_size=20)+
+  ggplot2::theme(panel.border     = ggplot2::element_blank(),
+                 panel.background = ggplot2::element_blank(),
+                 legend.position  = c(0.2, 0.65),
+                 axis.text        = ggplot2::element_text(size=12),
+                 axis.title       = ggplot2::element_text(size=15))
+fig
+```
+
+
+
+
+
+Row {data-height=300}
+--------------------------------------------------------------------------------
+
+### **Considerando o tamanho da população**
+
+```{r}
+names(dfshow)[1] <- "continent"
+
+dfshow <- dfshow %>% 
+  dplyr::arrange(-`Conf.<br>em 100k`)
+dfshow$continent <- factor(dfshow$continent, levels = dfshow$continent)
+
+
+plotly::plot_ly(data = dfshow, 
+                x = ~ continent, 
+                y = ~ `Conf.<br>em 100k`, 
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = confirmed_colorT)) %>%
+  plotly::add_trace(y = ~ `Recup.<br>em 100k`, 
+                    name = "Recuperados",
+                    marker = list(color = recovered_colorT)) %>%
+  plotly::add_trace(y = ~ `Mortes<br>em 100k`, 
                     name = "Mortes",
                     marker = list(color = death_colorT)) %>%
   plotly::layout(barmode = 'group',
