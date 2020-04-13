@@ -644,7 +644,7 @@ Row {data-height=350}
 
 ```{r}
 m <- 7
-country <- c(as.character(df$Country.Region[1:m]))
+country <- c(as.character(df$Country.Region[1:m]), "China", "Iran")
 
 country_ordem <- df_pais %>% 
   dplyr::group_by(Country.Region) %>% 
@@ -658,9 +658,9 @@ df_mpaises <- df_pais %>%
   dplyr::arrange(date)
 
 df_mpaises$Country.Region <- factor(df_mpaises$Country.Region, 
-                                    levels = c("US", "France", "Germany",
-                                    "Spain", "Italy",
-                                    "Iran", "China"))
+                                    levels = rev(c("China", "Iran", "Italy",
+                                               "Spain", "France", "Germany",
+                                               "United Kingdom", "US")))
                                       
 fig <- df_mpaises %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, 
