@@ -644,7 +644,7 @@ Row {data-height=350}
 
 ```{r}
 m <- 7
-country <- c(as.character(df$Country.Region[1:m]), "China", "Iran")
+country <- c(as.character(df$Country.Region[1:m]), "Iran", "China")
 
 country_ordem <- df_pais %>% 
   dplyr::group_by(Country.Region) %>% 
@@ -658,9 +658,11 @@ df_mpaises <- df_pais %>%
   dplyr::arrange(date)
 
 df_mpaises$Country.Region <- factor(df_mpaises$Country.Region, 
-                                    levels = rev(c("China", "Iran", "Italy",
-                                               "Spain", "France", "Germany",
-                                               "United Kingdom", "US")))
+                                    levels = country)
+                                    
+                                    # levels = rev(c("China", "Iran", "Italy",
+                                    #                "Spain", "France", "Germany",
+                                    #                "United Kingdom", "US")))
                                       
 fig <- df_mpaises %>% 
   ggplot2::ggplot(ggplot2::aes(x = date, 
@@ -825,8 +827,8 @@ fig2 <- plotly::add_trace(fig2,
   plotly::add_text(x = max(aux.df$dia),
                    y = aux.df$confirmed_cum[aux.df$dia == max(aux.df$dia)],
                    text = "Brazil",
-                   showlegend = F,
-                   textposition = "right")
+                   showlegend = F)
+                   # textposition = "right")
 fig2 <- plotly::layout(fig2,
                        title = "",
                        yaxis = list(title =
