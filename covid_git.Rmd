@@ -731,7 +731,7 @@ fig
 
 
 
-Row {data-height=400}
+Row {data-height=600}
 --------------------------------------------------------------------------------
 
 ### **Evolução dos CONFIRMADOS desde `r as.character.POSIXt(min(coronavirus$date), format = "%d/%m/%Y")`**
