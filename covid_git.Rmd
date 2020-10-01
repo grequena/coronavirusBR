@@ -135,14 +135,25 @@ coronavirus <- rbind(d.con.daily.l, d.rec.daily.l, d.dea.daily.l)
 # - Check if data is updated
 # max(coronavirus$date)
 #___________________________________________________________Data 4 BR por Estado
-d.munic <-
-  read.csv(url("https://brasil.io/dataset/covid19/caso?format=csv")) %>%
+temp <- tempfile()
+download.file("https://data.brasil.io/dataset/covid19/caso_full.csv.gz",
+              temp)
+R.utils::gzip(temp, ext = "gz")
+d.munic <- read.csv("caso_full.csv", header=T, sep=",") %>%
   dplyr::mutate(date = as.Date(date))
+
+# d.munic <-
+#   read.csv(url("https://brasil.io/dataset/covid19/caso?format=csv")) %>%
+#   dplyr::mutate(date = as.Date(date))
 
 d.estado <- d.munic %>%
   dplyr::filter(place_type == "state") %>%
   dplyr::arrange(date) %>% 
-  dplyr::select(date, state, confirmed, deaths, estimated_population_2019)
+  dplyr::select(date, state, last_available_confirmed,
+                last_available_deaths,
+                estimated_population_2019) %>% 
+  dplyr::rename(confirmed = last_available_confirmed,
+                deaths = last_available_deaths)
 #_________________________________________________________Data 5 population size
 # Fonte: https://data.worldbank.org/indicator/SP.POP.TOTL
 d.pop <- read.csv(url("https://raw.githubusercontent.com/grequena/coronavirusBR/master/popsize.csv"), sep = ';', header = TRUE)
